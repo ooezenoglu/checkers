@@ -7,7 +7,7 @@
 #include <string.h>
 #include "helpers.h"
 
-void parse_commandline_args(int argc, char *argv[], char *gameID, int *playerCount) {
+void parse_commandline_args(int argc, char *argv[], char **gameID, int *playerCount) {
 
     int opt;
 
@@ -21,9 +21,9 @@ void parse_commandline_args(int argc, char *argv[], char *gameID, int *playerCou
         switch (opt) {
 
             case 'g':
-                gameID = optarg;
+                *gameID = optarg;
 
-                if(strlen(gameID) != 13) {
+                if(strlen(*gameID) != 13) {
                     perror("Game-ID must be exactly 13 characters long");
                     exit(EXIT_FAILURE);
                 }
@@ -45,6 +45,6 @@ void parse_commandline_args(int argc, char *argv[], char *gameID, int *playerCou
     }
 
     /* debugging */
-    printf("Game-ID: %s\n", gameID);
+    printf("Game-ID: %s\n", *gameID);
     printf("Spielernummer: %i\n", *playerCount);    
 }

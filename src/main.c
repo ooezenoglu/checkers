@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in servAddr;
     struct in_addr *IPAddr;
 
-    parse_commandline_args(argc, argv, gameID, &playerCount);
+    parse_commandline_args(argc, argv, &gameID, &playerCount);
 
     /* create IP socket that uses TCP (i.e., stream socket) */
     if((sockfd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
