@@ -6,7 +6,7 @@ CC = gcc
 CFLAGS = -g -Wall -Werror
 
 # required libraries
-LIBS = -lm
+LIBS =
 
 SRCFILES = helpers.c main.c
 
