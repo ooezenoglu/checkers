@@ -4,10 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <math.h>
+#include <string.h>
 #include "helpers.h"
 
-void parse_commandline_args(int argc, char *argv[], long *gameID, int *playerCount) {
+void parse_commandline_args(int argc, char *argv[], char *gameID, int *playerCount) {
 
     int opt;
 
@@ -21,13 +21,10 @@ void parse_commandline_args(int argc, char *argv[], long *gameID, int *playerCou
         switch (opt) {
 
             case 'g':
-                *gameID = atol(optarg);
+                gameID = optarg;
 
-                /* check that gameID is positive and has length 13;
-                note that whether gameID = 0 is tested seperately and 
-                before testing the length ( otherwise error due to log10(0) ) */
-                if(*gameID <= 0 || floor(log10(*gameID)) + 1 != 13) {
-                    perror("Game-ID must be positive and exactly 13 digits long");
+                if(strlen(gameID) != 13) {
+                    perror("Game-ID must be exactly 13 characters long");
                     exit(EXIT_FAILURE);
                 }
                 break;
@@ -48,6 +45,6 @@ void parse_commandline_args(int argc, char *argv[], long *gameID, int *playerCou
     }
 
     /* debugging */
-    printf("Game-ID: %ld\n", *gameID);
+    printf("Game-ID: %s\n", gameID);
     printf("Spielernummer: %i\n", *playerCount);    
 }
