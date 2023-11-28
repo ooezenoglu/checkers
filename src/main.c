@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include "helpers.h"
+#include "prolog.h"
 
 #define GAMEKINDNAME "Checkers"
 #define PORTNUMBER 1357
@@ -56,7 +57,12 @@ int main(int argc, char *argv[]) {
         if(connect(sockfd, (struct sockaddr*) &servAddr, sizeof(servAddr)) == 0) {
             printf("Successfully connected to %s!\n", inet_ntoa(servAddr.sin_addr));
 
-            /* TODO: call performConnection() */
+
+            if(performConnection(sockfd, gameID) < 0) {
+                /* TODO: add concrete error message from server */
+                perror("Received NACK, disconnecting from server...");
+                exit(EXIT_FAILURE);
+            }
 
             break;
 
