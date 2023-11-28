@@ -8,7 +8,7 @@ CFLAGS = -g -Wall -Werror
 # required libraries
 LIBS =
 
-SRCFILES = performConnection.c helpers.c main.c
+SRCFILES = performConnection.c connectToServer.c helpers.c main.c
 
 # required object files
 OBJFILES = $(SRCFILES:.c=.o)
