@@ -15,12 +15,6 @@ int connectToServer(const char *host, const int port) {
     struct addrinfo hints, *addrInfoList, *entry;
     struct sockaddr_in servAddr;
     struct in_addr *IPAddr;
-
-    /* create TCP/IP socket */
-    if((sockfd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("Failed to create socket");
-        return -1;
-    }
     
     /* zero out bytes of hints sruct */
     memset(&hints, 0, sizeof(hints));
@@ -43,6 +37,12 @@ int connectToServer(const char *host, const int port) {
         servAddr.sin_family = AF_INET;
         servAddr.sin_port = htons(port);        
         servAddr.sin_addr = *IPAddr;
+
+        /* create TCP/IP socket */
+        if((sockfd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+            printf("Failed to create socket");
+            return -1;
+        }
 
         /* connect to server */
         if(connect(sockfd, (struct sockaddr*) &servAddr, sizeof(servAddr)) == 0) {
