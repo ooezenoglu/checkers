@@ -9,7 +9,7 @@
 #include <sys/socket.h>
 #include "helpers.h"
 
-void parse_commandline_args(int argc, char *argv[], char **gameID, int *playerCount) {
+void parseCommandLineArgs(int argc, char *argv[], char **gameID, int *playerCount) {
 
     int opt;
 

@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     char *gameID;
     int playerCount, sockfd;
 
-    parse_commandline_args(argc, argv, &gameID, &playerCount);
+    parseCommandLineArgs(argc, argv, &gameID, &playerCount);
 
     /* connect to game server via an TCP/IP socket */
     if((sockfd = connectToServer(HOSTNAME, PORTNUMBER)) < 0) {
@@ -33,6 +33,6 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    
+
     exit(EXIT_SUCCESS);
 }

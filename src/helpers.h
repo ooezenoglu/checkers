@@ -1,7 +1,7 @@
 #ifndef helpers
 #define helpers
 
-void parse_commandline_args(int argc, char *argv[], char **gameID, int *playerCount);
+void parseCommandLineArgs(int argc, char *argv[], char **gameID, int *playerCount);
 int connectToServer(const char *host, const int port);
 int performConnection(const int sockfd, const char *gameID);
 void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize);
