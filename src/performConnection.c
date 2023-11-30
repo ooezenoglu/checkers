@@ -6,43 +6,76 @@
 #include "helpers.h"
 #include "prolog.h"
 
-#define BUFFER 255
+#define BUFFER_SIZE 255
 #define CLIENT_VERSION 2
-#define END_OF_PROLOG "+ ENDPLAYERS\n"
 
+int performConnection(const int sockfd, const char *gameID) {
 
-int performConnection(int sockfd, const char *gameID) {
+    char buffer[BUFFER_SIZE];
+    bool endOfPrologReached = false;
 
-    char buffer[BUFFER]; 
-    char *resp[3];
+    while(!endOfPrologReached) {
 
-    /* TODO allow storing arbitrary game data */
-    resp[0] = "VERSION 2";
-    resp[1] = "ID 1yv8mkx3t1bcl";
-    resp[2] = "PLAYER";
-    int i = 0;
+        receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
 
-    while (strncmp(buffer, END_OF_PROLOG, strlen(END_OF_PROLOG)) != 0) {
+        if (buffer[0] == '-') {
 
-        memset(buffer, 0, strlen(buffer));
+            printf("NACK received; Disconecting from server...");
+            return -1; 
 
-        /* server sending */
-        recv(sockfd, buffer, sizeof(buffer), 0);
-        printf("S: %s\n", buffer);
+        } else if(stringCompare(buffer, "+ MNM Gameserver")) {
 
-        /* NACK received; abort */
-        if (buffer[0] == '-') { return -1; }
+            /* TODO possibly extract and store gameserver version*/
 
-        memset(buffer, 0, strlen(buffer));
+            /* note: client major version must match game server major version */
+            sendLineToServer(sockfd, buffer, "VERSION 2.3");
 
-        /* client sending */
-        if (i < 2) {
-            sprintf(&buffer[0], "%s\n", resp[i]);
-            send(sockfd, buffer, strlen(buffer), 0);
-            printf("C: %s\n", buffer);
-            i++;
+        } else if(stringCompare(buffer, "+ Client version accepted - please send Game-ID to join")) {
+
+            char* gameLineID = stringConcat("ID ", gameID);
+            sendLineToServer(sockfd, buffer, gameLineID);
+            free(gameLineID);
+
+        } else if(stringCompare(buffer, "+ PLAYING")) {
+
+            /* TODO extract and store gamekind name */
+
+            /* read in the game name; note that this is no separate 
+            else-if case bc the response is of form "+ <<Game-Name>>"
+            which is difficult to parse */
+            receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
+
+            /* TODO possibly extract and store game name */
+
+            /* note: don't pass a player count */
+            sendLineToServer(sockfd, buffer, "PLAYER");
+
+        } else if(stringCompare(buffer, "+ YOU")) {
+
+            /* TODO extract and store player number and name */
+            
+        } else if(stringCompare(buffer, "+ TOTAL")) {
+
+            /* TODO extract and store player count */
+
+            /* read in the player number and name of second player; 
+            note that this is no separate else-if case bc the response 
+            is of form "+ <<Player-Number>> <<Player-Name>> <<Ready>>"
+            which is difficult to parse */
+            receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
+
+        } else if(stringCompare(buffer, "+ ENDPLAYERS")) {
+
+            endOfPrologReached = true;
+        
+        } else {
+
+            /* for unexpected things */
+            printf("Something went wrong while setting up the game");
+            return -1;
         }
     }
 
-    return 0;
-}
+    return 1;
+    
+} 
