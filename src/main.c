@@ -9,7 +9,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include "helpers.h"
-#include "prolog.h"
 
 #define GAMEKINDNAME "Checkers"
 #define PORTNUMBER 1357

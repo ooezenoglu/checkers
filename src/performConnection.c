@@ -4,7 +4,6 @@
 #include <sys/socket.h>
 #include <stdbool.h>
 #include "helpers.h"
-#include "prolog.h"
 
 #define BUFFER_SIZE 255
 #define CLIENT_VERSION 2
