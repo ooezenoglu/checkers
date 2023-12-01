@@ -59,6 +59,7 @@ void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize)
     /* read-in data until the first newline character is reached */
     for(int i = 0; i < bufferSize && recv(sockfd, &buffer[i], 1, 0) == 1; i++) {
         if (buffer[i] == '\n') {
+            buffer[i+1] = '\0';
             break;
         }
     }
