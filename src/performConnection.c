@@ -6,9 +6,8 @@
 #include "helpers.h"
 
 #define BUFFER_SIZE 255
-#define CLIENT_VERSION 2
 
-int performConnection(const int sockfd, const char *gameID) {
+int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
 
     char buffer[BUFFER_SIZE];
     bool endOfPrologReached = false;
@@ -27,11 +26,11 @@ int performConnection(const int sockfd, const char *gameID) {
             /* TODO possibly extract and store gameserver version*/
 
             /* note: client major version must match game server major version */
-            sendLineToServer(sockfd, buffer, "VERSION 2.3");
+            sendLineToServer(sockfd, buffer, stringConcat("VERSION ", gameDataPointer -> clientVersion));
 
         } else if(stringCompare(buffer, "+ Client version accepted - please send Game-ID to join")) {
 
-            char* gameLineID = stringConcat("ID ", gameID);
+            char* gameLineID = stringConcat("ID ", gameDataPointer -> gameID);
             sendLineToServer(sockfd, buffer, gameLineID);
             free(gameLineID);
 
@@ -47,7 +46,7 @@ int performConnection(const int sockfd, const char *gameID) {
             /* TODO possibly extract and store game name */
 
             /* note: don't pass a player count */
-            sendLineToServer(sockfd, buffer, "PLAYER");
+            sendLineToServer(sockfd, buffer, stringConcat("PLAYER ", gameDataPointer -> desPlayerNumber));
 
         } else if(stringCompare(buffer, "+ YOU")) {
 
@@ -77,4 +76,4 @@ int performConnection(const int sockfd, const char *gameID) {
 
     return 1;
     
-} 
+}

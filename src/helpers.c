@@ -87,6 +87,9 @@ bool stringCompare(const char *s1, const char *s2) {
 
 char *stringConcat(const char *leftString, const char *rightString) {
 
+    if(leftString == NULL) { return (char *) rightString; }
+    if(rightString == NULL) { return (char *) leftString; }
+
     /* allocate and clear memory for destination string 
     note that we need one more byte for the null terminator /0 */
     char *dest = calloc(strlen(leftString) + strlen(rightString) + 1, sizeof(char));

@@ -1,9 +1,24 @@
 #ifndef helpers
 #define helpers
 
+struct gameInfo {
+    char *serverVersion;
+    char *clientVersion;
+    char *gameID;
+    char *gamekindName;
+    char *gameName;
+    char *desPlayerNumber;
+    int thisPlayerNumber;
+    char *thisPlayerName;
+    int playerCount;
+    int otherPlayerNumber;
+    char *otherPlayerName;
+    bool otherPlayerReady;
+};
+
 void parseCommandLineArgs(int argc, char *argv[], char **gameID, int *playerCount);
 int connectToServer(const char *host, const int port);
-int performConnection(const int sockfd, const char *gameID);
+int performConnection(const int sockfd, struct gameInfo *gameDataPointer);
 void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize);
 void sendLineToServer(const int sockfd, char *buffer, const char *line);
 bool stringCompare(const char *s1, const char *s2);

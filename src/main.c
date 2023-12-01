@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 #include "helpers.h"
 
+#define CLIENT_VERSION "2.3"
 #define GAMEKINDNAME "Checkers"
 #define PORTNUMBER 1357
 #define HOSTNAME "sysprak.priv.lab.nm.ifi.lmu.de"
@@ -19,6 +20,7 @@ int main(int argc, char *argv[]) {
 
     char *gameID;
     int playerCount, sockfd;
+    struct gameInfo gameData;
 
     parseCommandLineArgs(argc, argv, &gameID, &playerCount);
 
@@ -28,7 +30,12 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    if (performConnection(sockfd, gameID) < 0) {
+    gameData.gameID = gameID;
+    gameData.playerCount = playerCount;
+    gameData.desPlayerNumber = NULL;
+    gameData.clientVersion = CLIENT_VERSION;
+
+    if (performConnection(sockfd, &gameData) < 0) {
         printf("Prologue phase failed\n");
         exit(EXIT_FAILURE);
     }
