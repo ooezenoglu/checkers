@@ -13,9 +13,8 @@
 int connectToServer(const char *host, const int port) {
 
     int sockfd;
-    struct addrinfo hints, *addrInfoList, *entry;
+    struct addrinfo hints, *addrInfoList;
     struct sockaddr_in servAddr;
-    struct in_addr *IPAddr;
     
     /* zero out bytes of hints sruct */
     memset(&hints, 0, sizeof(hints));
@@ -24,46 +23,34 @@ int connectToServer(const char *host, const int port) {
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     
-    /* determine server information (concretely the IP address) */
+    /* determine server IP address */
     if(getaddrinfo(host, NULL, &hints, &addrInfoList) != 0) {
         printf("Failed to get host address information");
         return -1;
     }
 
-    /* connect to server using one of the IP-addresses from the list */
-    for(entry = addrInfoList; entry != NULL; entry = entry -> ai_next) {
-      
-        IPAddr = &((struct sockaddr_in *) entry -> ai_addr) -> sin_addr;
+    /* store server info */
+    servAddr.sin_family = AF_INET;
+    servAddr.sin_port = htons(port);
+    servAddr.sin_addr = *(&((struct sockaddr_in *) addrInfoList -> ai_addr) -> sin_addr); /* grab the first IP address from the list */
 
-        servAddr.sin_family = AF_INET;
-        servAddr.sin_port = htons(port);        
-        servAddr.sin_addr = *IPAddr;
-
-        /* create TCP/IP socket */
-        if((sockfd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
-            printf("Failed to create socket");
-            return -1;
-        }
-
-        /* connect to server */
-        if(connect(sockfd, (struct sockaddr*) &servAddr, sizeof(servAddr)) == 0) {
-            printf("Successfully established connection with %s via %s\n", host, inet_ntoa(servAddr.sin_addr));
-
-            return sockfd;
-
-        } else {
-            printf("Failed to establish connection with %s via %s\n", host, inet_ntoa(servAddr.sin_addr));
-            printf("Trying a different IP-address...\n");
-            continue;
-        }
-    }
-    
-    printf("Failed to establish connection with %s\n", host);
-    printf("Closing socket...\n");
-
-    /* clean-up */
     freeaddrinfo(addrInfoList);
-    close(sockfd);
 
+    /* create TCP/IP socket */
+    if((sockfd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+        printf("Failed to create socket");
+        return -1;
+    }
+
+     /* connect to server */
+    if(connect(sockfd, (struct sockaddr*) &servAddr, sizeof(servAddr)) == 0) {
+        printf("Successfully established connection with %s via %s\n", host, inet_ntoa(servAddr.sin_addr));
+        return sockfd;
+    }
+     
+    printf("Failed to establish connection with %s via %s\n", host, inet_ntoa(servAddr.sin_addr));
+    printf("Closing socket...\n");
+    close(sockfd);
+    
     return -1;
 }
