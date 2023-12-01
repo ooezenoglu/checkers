@@ -18,11 +18,10 @@
 
 int main(int argc, char *argv[]) {
 
-    char *gameID;
-    int playerCount, sockfd;
+    int sockfd;
     struct gameInfo gameData;
 
-    parseCommandLineArgs(argc, argv, &gameID, &playerCount);
+    parseCommandLineArgs(argc, argv, &gameData);
 
     /* connect to game server via an TCP/IP socket */
     if((sockfd = connectToServer(HOSTNAME, PORTNUMBER)) < 0) {
@@ -30,9 +29,6 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    gameData.gameID = gameID;
-    gameData.playerCount = playerCount;
-    gameData.desPlayerNumber = NULL;
     gameData.clientVersion = CLIENT_VERSION;
 
     if (performConnection(sockfd, &gameData) < 0) {

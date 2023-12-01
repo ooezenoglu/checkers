@@ -46,7 +46,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
             /* TODO possibly extract and store game name */
 
             /* note: don't pass a player count */
-            sendLineToServer(sockfd, buffer, stringConcat("PLAYER ", gameDataPointer -> desPlayerNumber));
+            sendLineToServer(sockfd, buffer, stringConcat("PLAYER ", NULL));
 
         } else if(stringCompare(buffer, "+ YOU")) {
 

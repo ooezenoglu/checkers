@@ -9,7 +9,7 @@
 #include <sys/socket.h>
 #include "helpers.h"
 
-void parseCommandLineArgs(int argc, char *argv[], char **gameID, int *playerCount) {
+void parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointer) {
 
     int opt;
 
@@ -23,19 +23,19 @@ void parseCommandLineArgs(int argc, char *argv[], char **gameID, int *playerCoun
         switch (opt) {
 
             case 'g':
-                *gameID = optarg;
+                gameDataPointer -> gameID = optarg;
 
-                if(strlen(*gameID) != 13) {
+                if(strlen(gameDataPointer -> gameID) != 13) {
                     perror("Game-ID must be exactly 13 characters long");
                     exit(EXIT_FAILURE);
                 }
                 break;
 
             case 'p':
-                *playerCount = atoi(optarg);
+                gameDataPointer -> desPlayerNumber = atoi(optarg);
 
-                if(*playerCount != 2) {
-                    perror("Player count must be 2 for Checkers");
+                if(gameDataPointer -> desPlayerNumber != 1 && gameDataPointer -> desPlayerNumber != 2) {
+                    perror("The player number must be 1 or 2.");
                     exit(EXIT_FAILURE);
                 }
                 break;
@@ -47,8 +47,8 @@ void parseCommandLineArgs(int argc, char *argv[], char **gameID, int *playerCoun
     }
 
     /* debugging */
-    printf("Game-ID: %s\n", *gameID);
-    printf("Spielernummer: %i\n", *playerCount);    
+    printf("Game-ID: %s\n", gameDataPointer -> gameID);
+    printf("Spielernummer: %i\n", gameDataPointer -> desPlayerNumber);    
 }
 
 void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize) {

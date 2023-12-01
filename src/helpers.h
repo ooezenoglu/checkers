@@ -7,7 +7,7 @@ struct gameInfo {
     char *gameID;
     char *gamekindName;
     char *gameName;
-    char *desPlayerNumber;
+    int desPlayerNumber;
     int thisPlayerNumber;
     char *thisPlayerName;
     int playerCount;
@@ -16,7 +16,7 @@ struct gameInfo {
     bool otherPlayerReady;
 };
 
-void parseCommandLineArgs(int argc, char *argv[], char **gameID, int *playerCount);
+void parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointer);
 int connectToServer(const char *host, const int port);
 int performConnection(const int sockfd, struct gameInfo *gameDataPointer);
 void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize);
