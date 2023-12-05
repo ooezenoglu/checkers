@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
 
     parseCommandLineArgs(argc, argv, &gameData);
 
-    /* connect to game server via an TCP/IP socket */
+    /* connect to game server via TCP/IP socket */
     if((sockfd = connectToServer(HOSTNAME, PORTNUMBER)) < 0) {
         printf("Failed to establish connection with %s\n", HOSTNAME);
         exit(EXIT_FAILURE);
@@ -34,10 +34,10 @@ int main(int argc, char *argv[]) {
     gameData.clientVersion[strlen(CLIENT_VERSION)] = '\0';
 
     if (performConnection(sockfd, &gameData) < 0) {
-        printf("Prologue phase failed\n");
+        perror("Prologue phase failed. Closing socket...");
+        close(sockfd);
         exit(EXIT_FAILURE);
     }
-
 
     exit(EXIT_SUCCESS);
 }
