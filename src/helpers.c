@@ -83,23 +83,52 @@ void sendLineToServer(const int sockfd, char *buffer, const char *line) {
 }
 
 bool stringCompare(const char *s1, const char *s2) {
-    return strncmp(s1, s2, strlen(s2)) == 0;
+
+    int n = (strlen(s1) <= strlen(s2)) ? strlen(s1) : strlen(s2);
+
+    return strncmp(s1, s2, n) == 0;
 }
 
-char *stringConcat(const char *leftString, const char *rightString) {
+int stringConcat(const char *leftString, const char *rightString, char *dest) {
 
-    if(leftString == NULL) { return (char *) rightString; }
-    if(rightString == NULL) { return (char *) leftString; }
+    if(leftString == NULL && rightString != NULL) {
+        /* copy the right string + /0 to the destination */
+        memcpy(dest, rightString, strlen(rightString) + 1);
+        return 0;
+    }
 
-    /* allocate and clear memory for destination string 
-    note that we need one more byte for the null terminator /0 */
-    char *dest = calloc(strlen(leftString) + strlen(rightString) + 1, sizeof(char));
+    if(leftString != NULL && rightString == NULL) { 
+        /* copy the left string + /0 to the destination */
+        memcpy(dest, leftString, strlen(leftString) + 1);
+        return 0;
+    }
+
+    if(leftString == NULL && rightString == NULL) {
+        perror("Failed to concatenate strings");
+        return -1; 
+    }
 
     /* copy the left string to the destination */
     memcpy(dest, leftString, strlen(leftString));
 
-    /* concatenate the right string and it's null terminator to the destination */
+    /* concatenate the right string and its null terminator to the destination */
     strncat(dest, rightString, strlen(rightString) + 1);
 
-    return dest;
+    return 0;
+}
+
+char **stringTokenizer(char *s, int *len) {
+
+    char **tokenPointer = calloc(10, sizeof(char *));
+    char *token;
+    
+    int i = 0;
+    while ((token = strtok_r(s, " ", &s)) != NULL) {
+        tokenPointer[i] = token;
+        i++;
+    }
+
+    *len = i;
+
+    return tokenPointer;
 }

@@ -22,6 +22,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer);
 void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize);
 void sendLineToServer(const int sockfd, char *buffer, const char *line);
 bool stringCompare(const char *s1, const char *s2);
-char *stringConcat(const char *leftString, const char *rightString);
+int stringConcat(const char *leftString, const char *rightString, char *dest);
+char **stringTokenizer(char *s, int *len);
 
 #endif
