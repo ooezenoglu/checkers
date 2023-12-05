@@ -2,18 +2,18 @@
 #define helpers
 
 struct gameInfo {
-    char *serverVersion;
-    char *clientVersion;
-    char *gameID;
-    char *gamekindName;
-    char *gameName;
+    char serverVersion[10];
+    char clientVersion[10];
+    char gameID[15];
+    char gamekindName[20];
+    char gameName[40];
     int desPlayerNumber;
     int thisPlayerNumber;
-    char *thisPlayerName;
+    char thisPlayerName[20];
     int playerCount;
-    int otherPlayerNumber;
-    char *otherPlayerName;
-    bool otherPlayerReady;
+    int oppPlayerNumber;
+    char oppPlayerName[20];
+    int oppPlayerReady;
 };
 
 void parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointer);

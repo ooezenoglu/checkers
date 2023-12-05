@@ -23,7 +23,8 @@ void parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPoint
         switch (opt) {
 
             case 'g':
-                gameDataPointer -> gameID = optarg;
+                memcpy(gameDataPointer -> gameID, optarg, strlen(optarg));
+                (gameDataPointer -> gameID)[strlen(optarg)] = '\0';
 
                 if(strlen(gameDataPointer -> gameID) != 13) {
                     perror("Game-ID must be exactly 13 characters long");
