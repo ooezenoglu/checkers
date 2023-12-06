@@ -9,13 +9,13 @@
 #include <sys/socket.h>
 #include "helpers.h"
 
-void parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointer) {
+int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointer) {
 
     int opt;
 
     if (argc <= 1) {
-        perror("Incorrect format");
-        exit(EXIT_FAILURE);
+        perror("Incorrect format. Please enter the data in the format -g <GAME-ID> -p <{1,2}>.");
+        return -1;
     }
 
     /* parse command line arguments */
@@ -27,8 +27,8 @@ void parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPoint
                 (gameDataPointer -> gameID)[strlen(optarg)] = '\0';
 
                 if(strlen(gameDataPointer -> gameID) != 13) {
-                    perror("Game-ID must be exactly 13 characters long");
-                    exit(EXIT_FAILURE);
+                    perror("Game-ID must be exactly 13 characters long.");
+                    return -1;
                 }
                 break;
 
@@ -37,19 +37,21 @@ void parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPoint
 
                 if(gameDataPointer -> desPlayerNumber != 1 && gameDataPointer -> desPlayerNumber != 2) {
                     perror("The player number must be 1 or 2.");
-                    exit(EXIT_FAILURE);
+                    return -1;
                 }
                 break;
 
             default:
-                perror("Incorrect format");
-                exit(EXIT_FAILURE);
+                perror("Incorrect format. Please enter the data in the format -g <GAME-ID> -p <{1,2}>.");
+                return -1;
         }
     }
 
     /* debugging */
     printf("Game-ID: %s\n", gameDataPointer -> gameID);
-    printf("Spielernummer: %i\n", gameDataPointer -> desPlayerNumber);    
+    printf("Spielernummer: %i\n", gameDataPointer -> desPlayerNumber);  
+
+    return 0;  
 }
 
 int receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize) {

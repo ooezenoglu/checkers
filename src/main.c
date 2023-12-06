@@ -21,7 +21,11 @@ int main(int argc, char *argv[]) {
     int sockfd;
     struct gameInfo gameData;
 
-    parseCommandLineArgs(argc, argv, &gameData);
+    /* read game ID and desired player number from the console */
+    if(parseCommandLineArgs(argc, argv, &gameData) < 0) {
+        perror("Failed to parse command line arguments."),
+        exit(EXIT_FAILURE);
+    }
 
     /* connect to game server via TCP/IP socket */
     if((sockfd = connectToServer(HOSTNAME, PORTNUMBER)) < 0) {

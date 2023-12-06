@@ -16,7 +16,7 @@ struct gameInfo {
     int oppPlayerReady;
 };
 
-void parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointer);
+int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointer);
 int connectToServer(const char *host, const int port);
 int performConnection(const int sockfd, struct gameInfo *gameDataPointer);
 int receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize);
