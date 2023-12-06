@@ -19,10 +19,10 @@ struct gameInfo {
 void parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointer);
 int connectToServer(const char *host, const int port);
 int performConnection(const int sockfd, struct gameInfo *gameDataPointer);
-void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize);
-void sendLineToServer(const int sockfd, char *buffer, const char *line);
+int receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize);
+int sendLineToServer(const int sockfd, char *buffer, const char *line);
 bool stringCompare(const char *s1, const char *s2);
 int stringConcat(const char *leftString, const char *rightString, char *dest);
-char **stringTokenizer(char *s, int *len);
+// char **stringTokenizer(char *s, int *len);
 
 #endif

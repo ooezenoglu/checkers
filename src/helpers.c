@@ -52,13 +52,19 @@ void parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPoint
     printf("Spielernummer: %i\n", gameDataPointer -> desPlayerNumber);    
 }
 
-void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize) {
+int receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize) {
 
     /* clear buffer before use */
     memset(buffer, 0, strlen(buffer));
 
     /* read-in data until the first newline character is reached */
-    for(int i = 0; i < bufferSize && recv(sockfd, &buffer[i], 1, 0) == 1; i++) {
+    for(int i = 0; i < bufferSize; i++) {
+
+        if(recv(sockfd, &buffer[i], 1, 0) != 1) {
+            perror("Failed to receive line from server.");
+            return -1;
+        }
+
         if (buffer[i] == '\n') {
             buffer[i+1] = '\0';
             break;
@@ -67,19 +73,30 @@ void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize)
 
     /* debugging */
     printf("S: %s\n", buffer);
+
+    return 0;
 }
 
-void sendLineToServer(const int sockfd, char *buffer, const char *line) {
+int sendLineToServer(const int sockfd, char *buffer, const char *line) {
 
     /* clear buffer before use */
     memset(buffer, 0, strlen(buffer));
 
     /* write into the buffer and finish with newline character */
-    sprintf(&buffer[0], "%s\n", line);
-    send(sockfd, buffer, strlen(buffer), 0);
+    if(sprintf(&buffer[0], "%s\n", line) < 0) {
+        perror("Failed to write line to buffer.");
+        return -1;
+    }
+
+    if(send(sockfd, buffer, strlen(buffer), 0) == -1) {
+        perror("Failed to send line to server.");
+        return -1; 
+    }
 
     /* debugging */
     printf("C: %s\n", buffer);
+
+    return 0;
 }
 
 bool stringCompare(const char *s1, const char *s2) {
@@ -93,42 +110,56 @@ int stringConcat(const char *leftString, const char *rightString, char *dest) {
 
     if(leftString == NULL && rightString != NULL) {
         /* copy the right string + /0 to the destination */
-        memcpy(dest, rightString, strlen(rightString) + 1);
+        if(memcpy(dest, rightString, strlen(rightString) + 1) == NULL) {
+            perror("Failed to copy string.");
+            return -1;
+        }
+
         return 0;
     }
 
     if(leftString != NULL && rightString == NULL) { 
         /* copy the left string + /0 to the destination */
-        memcpy(dest, leftString, strlen(leftString) + 1);
+        if(memcpy(dest, leftString, strlen(leftString) + 1) == NULL) {
+            perror("Failed to copy string.");
+            return -1;
+        };
+
         return 0;
     }
 
     if(leftString == NULL && rightString == NULL) {
-        perror("Failed to concatenate strings");
+        perror("Both string arguments are NULL.");
         return -1; 
     }
 
     /* copy the left string to the destination */
-    memcpy(dest, leftString, strlen(leftString));
+    if(memcpy(dest, leftString, strlen(leftString)) == NULL) {
+        perror("Failed to copy string.");
+        return -1;
+    }
 
     /* concatenate the right string and its null terminator to the destination */
-    strncat(dest, rightString, strlen(rightString) + 1);
+    if(strncat(dest, rightString, strlen(rightString) + 1) == NULL) {
+        perror("Failed to concatenate strings.");
+        return -1;
+    }
 
     return 0;
 }
 
-char **stringTokenizer(char *s, int *len) {
+// char **stringTokenizer(char *s, int *len) {
 
-    char **tokenPointer = calloc(10, sizeof(char *));
-    char *token;
+//     char **tokenPointer = calloc(10, sizeof(char *));
+//     char *token;
     
-    int i = 0;
-    while ((token = strtok_r(s, " ", &s)) != NULL) {
-        tokenPointer[i] = token;
-        i++;
-    }
+//     int i = 0;
+//     while ((token = strtok_r(s, " ", &s)) != NULL) {
+//         tokenPointer[i] = token;
+//         i++;
+//     }
 
-    *len = i;
+//     *len = i;
 
-    return tokenPointer;
-}
+//     return tokenPointer;
+// }

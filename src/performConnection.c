@@ -17,7 +17,10 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
 
     while(!endOfPrologReached) {
 
-        receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
+        if(receiveLineFromServer(sockfd, buffer, BUFFER_SIZE) < 0) {
+            perror("Failed to receive line from server.");
+            return -1;
+        }
 
         if (buffer[0] == '-') {
 
@@ -40,7 +43,10 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 return -1;
             } else {
                 /* send client version (note that it must match the game server major version) */
-                sendLineToServer(sockfd, buffer, concatStr);
+                if(sendLineToServer(sockfd, buffer, concatStr) < 0) {
+                    perror("Failed to send client version to server.");
+                    return -1;
+                }
                 /* clear helper variable after use */
                 memset(concatStr, 0, strlen(concatStr));
             }
@@ -55,7 +61,10 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 return -1;
             } else {
                 /* send game ID */
-                sendLineToServer(sockfd, buffer, concatStr);
+                if(sendLineToServer(sockfd, buffer, concatStr) < 0) {
+                    perror("Failed to send game ID to server.");
+                    return -1;
+                }
                 /* clear helper variable after use */
                 memset(concatStr, 0, strlen(concatStr));
             }
@@ -76,7 +85,10 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
             /* read in the game name; note that this is no separate 
             else-if case bc the response is of form "+ <<Game-Name>>"
             which is difficult to parse */
-            receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
+            if(receiveLineFromServer(sockfd, buffer, BUFFER_SIZE) < 0) {
+                perror("Failed to receive line from server.");
+                return -1;
+            }
 
             /* store & print game name */
             if(sscanf(buffer, "%*s %[^\n]", gameDataPointer -> gameName) != 1) {
@@ -92,7 +104,10 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 return -1;
             } else {
                 /* send desired player number */
-                sendLineToServer(sockfd, buffer, concatStr);
+                if(sendLineToServer(sockfd, buffer, concatStr) < 0) {
+                    perror("Failed to send desired player number to server.");
+                    return -1;
+                }
                 /* clear helper variable */
                 memset(concatStr, 0, strlen(concatStr));
             }
@@ -121,21 +136,30 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
             are ready; note that this is no separate else-if case bc the 
             response is of form "+ <<Player-Number>> <<Player-Name>> <<Ready>>"
             which is difficult to parse */
-            receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
+            if(receiveLineFromServer(sockfd, buffer, BUFFER_SIZE) < 0) {
+                perror("Failed to receive line from server.");
+                return -1;
+            }
 
             /* pointer to the first occurence of space character (+2 bc of preceding '+ ') */
-            pstart = strchr(buffer + 2, ' ');
+            if((pstart = strchr(buffer + 2, ' ')) == NULL) {
+                perror("strchr: Matching character not found.");
+                return -1;
+            }
 
             /* infer the index of the space before the player name starts */
             istart = pstart - buffer;
             
             /* pointer to the last occurence of space character */
-            pend = strrchr(buffer, ' ');
+            if((pend = strrchr(buffer, ' ')) == NULL) {
+                perror("strrchr: Matching character not found.");
+                return -1;
+            }
 
             /* infer the index of the space after the player name ends */
             iend = pend - buffer;
 
-            /* store the name of the opponent (+1 to skip preceding space)*/
+            /* store the name of the opponent (+1 to skip preceding space) */
             j = 0;
             for(int i = istart + 1; i < iend; i++) {
                 (gameDataPointer -> oppPlayerName)[j] = buffer[i];
@@ -179,5 +203,4 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
     printf("Prologue phase successful. Starting the game now.\n");
 
     return 0;
-    
-} 
+}
