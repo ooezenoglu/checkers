@@ -12,6 +12,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
     char buffer[BUFFER_SIZE] = { 0 };
     char concatStr[BUFFER_SIZE] = { 0 };
     bool endOfPrologReached = false;
+    char desPlayerNumberAsStr[12];
     char *pstart, *pend;
     int istart, iend, j;
 
@@ -98,8 +99,15 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 printf("Joining game \"%s\".\n", gameDataPointer -> gameName);
             }
 
-            /* genererate desired player number (pass NULL in this case) */
-            if (stringConcat("PLAYER ", NULL, concatStr) < 0) {
+            /* determine desired player number */
+            if (gameDataPointer -> desPlayerNumber == -1) {
+                desPlayerNumberAsStr[0] = '\0';  /* "empty" string */
+            } else {
+                sprintf(desPlayerNumberAsStr, "%i", gameDataPointer -> desPlayerNumber); 
+            }
+
+            /* generate response regarding desired player number */
+            if (stringConcat("PLAYER ", desPlayerNumberAsStr, concatStr) < 0) {
                 perror("Could not generate response regarding desired player number.");
                 return -1;
             } else {
