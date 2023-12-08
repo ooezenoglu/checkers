@@ -24,8 +24,13 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
         }
 
         if (buffer[0] == '-') {
+            
+            stringConcat("NACK received: ", buffer + 2, concatStr); /* + 2 to skip preceding "- " */
 
-            perror("NACK received.");
+            /* remove newline at the end of the string bc perror adds more stuff to it */
+            concatStr[strlen(concatStr)-1] = '\0';
+
+            perror(concatStr);
             return -1;
 
         } else if(stringCompare(buffer, "+ MNM Gameserver")) {
