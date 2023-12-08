@@ -25,7 +25,7 @@ int connectToServer(const char *host, const int port) {
     
     /* determine server IP address */
     if(getaddrinfo(host, NULL, &hints, &addrInfoList) != 0) {
-        printf("Failed to get host address information");
+        perror("Failed to get host address information.");
         return -1;
     }
 
@@ -38,18 +38,18 @@ int connectToServer(const char *host, const int port) {
 
     /* create TCP/IP socket */
     if((sockfd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("Failed to create socket");
+        perror("Failed to create socket.");
         return -1;
     }
 
      /* connect to server */
     if(connect(sockfd, (struct sockaddr*) &servAddr, sizeof(servAddr)) == 0) {
-        printf("Successfully established connection with %s via %s\n", host, inet_ntoa(servAddr.sin_addr));
+        /* debugging */
+        // printf("Successfully established connection with %s via %s\n", host, inet_ntoa(servAddr.sin_addr));
         return sockfd;
     }
      
-    printf("Failed to establish connection with %s via %s\n", host, inet_ntoa(servAddr.sin_addr));
-    printf("Closing socket...\n");
+    perror("Failed to establish connection with the server. Closing socket...\n");
     close(sockfd);
     
     return -1;

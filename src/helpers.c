@@ -19,7 +19,7 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
 
     while ((opt = getopt(argc, argv, ":g:p::")) != -1) {
         switch (opt) {
-            
+
             case 'g':
 
                 if (optarg == NULL || strlen(optarg) != 13) {
@@ -38,7 +38,7 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
             case 'p':
 
                 if (optind < argc && !stringCompare(argv[optind], "-g")) { /* value for -p is set */
-                
+
                     gameDataPointer -> desPlayerNumber = atoi(argv[optind]);
 
                     if (gameDataPointer -> desPlayerNumber != 1 && gameDataPointer -> desPlayerNumber != 2) {
@@ -77,10 +77,10 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
     }
 
     /* debugging */
-    printf("Game ID: %s\n", gameDataPointer -> gameID);
-    printf("Player number: %i\n", gameDataPointer -> desPlayerNumber);  
+    // printf("Game ID: %s\n", gameDataPointer -> gameID);
+    // printf("Player number: %i\n", gameDataPointer -> desPlayerNumber);
 
-    return 0;  
+    return 0;
 }
 
 int receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize) {
@@ -103,7 +103,7 @@ int receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize) 
     }
 
     /* debugging */
-    printf("S: %s\n", buffer);
+    // printf("S: %s\n", buffer);
 
     return 0;
 }
@@ -125,7 +125,7 @@ int sendLineToServer(const int sockfd, char *buffer, const char *line) {
     }
 
     /* debugging */
-    printf("C: %s\n", buffer);
+    // printf("C: %s\n", buffer);
 
     return 0;
 }
