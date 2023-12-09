@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include "helpers.h"
 
 #define BUFFER_SIZE 255
@@ -78,14 +79,14 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
         } else if(stringCompare(buffer, "+ PLAYING")) {
 
             /* store, check & print gamekind */
-            if(sscanf(buffer, "%*s%*s%s", gameDataPointer -> gamekindName) != 1) {
+            if(sscanf(buffer, "%*s%*s%s", gameDataPointer -> gameKindName) != 1) {
                 perror("Could not store game data.");
                 return -1;
-            } else if(!stringCompare(gameDataPointer -> gamekindName, "Checkers")) {
+            } else if(!stringCompare(gameDataPointer -> gameKindName, "Checkers")) {
                 perror("Gamekind must be \"Checkers\".");
                 return -1;
             } else {
-                printf("Playing \"%s\".\n", gameDataPointer -> gamekindName);
+                printf("Playing \"%s\".\n", gameDataPointer -> gameKindName);
             }
 
             /* read in the game name; note that this is no separate 

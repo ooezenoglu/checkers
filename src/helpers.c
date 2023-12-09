@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <sys/socket.h>
 #include "helpers.h"
 
@@ -11,13 +12,14 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
     int opt;
     int gflag = 0;
     int pflag = 0;
+    int cflag = 0;
 
     if (argc < 3) {
         perror("Incorrect format. Please enter the data in the format -g <GAME-ID> -p <{1,2}>.");
         return -1;
     }
 
-    while ((opt = getopt(argc, argv, ":g:p::")) != -1) {
+    while ((opt = getopt(argc, argv, ":g:p::c::")) != -1) {
         switch (opt) {
 
             case 'g':
@@ -37,7 +39,7 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
 
             case 'p':
 
-                if (optind < argc && !stringCompare(argv[optind], "-g")) { /* value for -p is set */
+                if (optind < argc && !(stringCompare(argv[optind], "-g") || stringCompare(argv[optind], "-c"))) { /* value for -p is set */
 
                     gameDataPointer -> desPlayerNumber = atoi(argv[optind]);
 
@@ -48,6 +50,16 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
 
                     /* player number is set correctly */
                     pflag = 1;
+                }
+
+                break;
+
+            case 'c':
+
+                if (optind < argc && !(stringCompare(argv[optind], "-g") || stringCompare(argv[optind], "-p"))) { /* value for -c is set */
+
+                    gameDataPointer -> configFile = argv[optind];
+                    cflag = 1;
                 }
 
                 break;
@@ -76,9 +88,15 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
         gameDataPointer -> desPlayerNumber = -1;
     }
 
+    /* default value if -c is not set */
+    if(cflag == 0) {
+        gameDataPointer -> configFile = "client.conf";
+    }
+
     /* debugging */
-    // printf("Game ID: %s\n", gameDataPointer -> gameID);
-    // printf("Player number: %i\n", gameDataPointer -> desPlayerNumber);
+    printf("Game ID: %s\n", gameDataPointer -> gameID);
+    printf("Player number: %i\n", gameDataPointer -> desPlayerNumber);
+    printf("Config file: %s\n", gameDataPointer -> configFile);
 
     return 0;
 }

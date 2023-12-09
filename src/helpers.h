@@ -2,10 +2,13 @@
 #define helpers
 
 struct gameInfo {
+    char *configFile;
+    char hostName[20];
+    uint16_t portNumber;
     char serverVersion[10];
     char clientVersion[10];
     char gameID[15];
-    char gamekindName[20];
+    char gameKindName[20];
     char gameName[40];
     int desPlayerNumber;
     int thisPlayerNumber;
