@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/types.h>
@@ -12,9 +13,6 @@
 #include "helpers.h"
 
 #define CLIENT_VERSION "2.3"
-#define GAMEKINDNAME "Checkers"
-#define PORTNUMBER 1357
-#define HOSTNAME "sysprak.priv.lab.nm.ifi.lmu.de"
 
 int main(int argc, char *argv[]) {
 
@@ -23,13 +21,19 @@ int main(int argc, char *argv[]) {
 
     /* read game ID and desired player number from the console */
     if(parseCommandLineArgs(argc, argv, &gameData) < 0) {
-        perror("Failed to parse command line arguments."),
+        perror("Failed to parse command line arguments.");
+        exit(EXIT_FAILURE);
+    }
+
+    /* parse and store game configuration from file */
+    if(readConfigFile(&gameData) < 0) {
+        perror("Failed to read configuration file.");
         exit(EXIT_FAILURE);
     }
 
     /* connect to game server via TCP/IP socket */
-    if((sockfd = connectToServer(HOSTNAME, PORTNUMBER)) < 0) {
-        printf("Failed to establish connection with %s\n", HOSTNAME);
+    if((sockfd = connectToServer(gameData.hostName, gameData.portNumber)) < 0) {
+        printf("Failed to establish connection with %s\n", gameData.hostName);
         exit(EXIT_FAILURE);
     }
 

@@ -2,15 +2,15 @@
 #define helpers
 
 struct gameInfo {
-    char *configFile;
-    char hostName[20];
+    char gameID[15];
+    int desPlayerNumber;
+    char configFile[40];
+    char hostName[40];
+    char gameKindName[20];
     uint16_t portNumber;
     char serverVersion[10];
     char clientVersion[10];
-    char gameID[15];
-    char gameKindName[20];
     char gameName[40];
-    int desPlayerNumber;
     int thisPlayerNumber;
     char thisPlayerName[20];
     int playerCount;
@@ -20,6 +20,7 @@ struct gameInfo {
 };
 
 int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointer);
+int readConfigFile(struct gameInfo *gameDataPointer);
 int connectToServer(const char *host, const int port);
 int performConnection(const int sockfd, struct gameInfo *gameDataPointer);
 int receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize);

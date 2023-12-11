@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <sys/socket.h>
 #include "helpers.h"
 
@@ -15,7 +16,7 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
     int cflag = 0;
 
     if (argc < 3) {
-        perror("Incorrect format. Please enter the data in the format -g <GAME-ID> -p <{1,2}>.");
+        perror("Incorrect format. Please enter the data in the format -g <GAME-ID> -p <{1,2}> -c <CONFIG-FILE>.");
         return -1;
     }
 
@@ -39,7 +40,8 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
 
             case 'p':
 
-                if (optind < argc && !(stringCompare(argv[optind], "-g") || stringCompare(argv[optind], "-c"))) { /* value for -p is set */
+                /* checks whether a value for -p is set */
+                if (optind < argc && argv[optind][0] != '-') {
 
                     gameDataPointer -> desPlayerNumber = atoi(argv[optind]);
 
@@ -56,9 +58,10 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
 
             case 'c':
 
-                if (optind < argc && !(stringCompare(argv[optind], "-g") || stringCompare(argv[optind], "-p"))) { /* value for -c is set */
+                /* checks whether a file name is set */
+                if(optind < argc && argv[optind][0] != '-') {
 
-                    gameDataPointer -> configFile = argv[optind];
+                    strcpy(gameDataPointer -> configFile, argv[optind]);
                     cflag = 1;
                 }
 
@@ -89,14 +92,71 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
     }
 
     /* default value if -c is not set */
-    if(cflag == 0) {
-        gameDataPointer -> configFile = "client.conf";
+    if (cflag == 0) {
+        strcpy(gameDataPointer -> configFile, "client.conf");
     }
 
     /* debugging */
     printf("Game ID: %s\n", gameDataPointer -> gameID);
     printf("Player number: %i\n", gameDataPointer -> desPlayerNumber);
     printf("Config file: %s\n", gameDataPointer -> configFile);
+
+    return 0;
+}
+
+int readConfigFile(struct gameInfo *gameDataPointer) {
+
+    FILE *file = fopen(gameDataPointer -> configFile, "r");
+
+    if (file == NULL) {
+        perror("Error opening configuration file.");
+        return -1;
+    }
+    
+    char line[256];
+
+    while(fgets(line, sizeof(line), file)) {
+
+        /* Remove newline character at the end */
+        line[strlen(line)] = '\0';
+        
+        /* Seperate key and value and remove = */
+        char *key = strtok(line, "=");
+        char *value = strtok(NULL, "=");
+
+        /* Remove empty spaces */
+        key = strtok(key, " \t\n\r");
+        value = strtok(value, " \t\n\r");
+
+        if (key != NULL && value != NULL) {
+
+            if (stringCompare(key, "Hostname")) {
+
+                /* Extract hostname */
+                strcpy(gameDataPointer -> hostName, value);
+                
+            } else if (stringCompare(key, "PortNumber")) {
+
+                /* Extract port number */
+                if(sscanf(value, "%"SCNu16, &(gameDataPointer -> portNumber)) != 1) { 
+                    perror("Could not store port number.");
+                    return -1;
+                }
+
+            } else if (stringCompare(key, "GameKindName")) {
+
+                /* Extract game kind name */
+                strcpy(gameDataPointer -> gameKindName, value);
+            }
+        }
+    }
+
+    fclose(file);
+
+    /* debugging */
+    printf("Hostname: %s\n", gameDataPointer -> hostName);
+    printf("Port: %d\n", gameDataPointer -> portNumber);
+    printf("Gamekind name: %s\n", gameDataPointer -> gameKindName);
 
     return 0;
 }

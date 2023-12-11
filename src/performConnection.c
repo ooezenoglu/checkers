@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include "helpers.h"
 
 #define BUFFER_SIZE 255

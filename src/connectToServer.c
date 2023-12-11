@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/types.h>
