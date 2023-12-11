@@ -38,8 +38,7 @@ int main(int argc, char *argv[]) {
     }
 
     /* store the client version in the game data struct */
-    memcpy(gameData.clientVersion, CLIENT_VERSION, strlen(CLIENT_VERSION));
-    gameData.clientVersion[strlen(CLIENT_VERSION)] = '\0';
+    memcpy(gameData.clientVersion, CLIENT_VERSION, strlen(CLIENT_VERSION) + 1);
 
     if (performConnection(sockfd, &gameData) < 0) {
         perror("Prologue phase failed. Closing socket...");

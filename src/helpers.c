@@ -8,6 +8,8 @@
 #include <sys/socket.h>
 #include "helpers.h"
 
+#define DEFAULT_CONFIG "client.conf"
+
 int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointer) {
 
     int opt;
@@ -30,8 +32,7 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
                     return -1;
                 }
 
-                memcpy(gameDataPointer -> gameID, optarg, strlen(optarg));
-                (gameDataPointer -> gameID)[strlen(optarg)] = '\0';
+                memcpy(gameDataPointer -> gameID, optarg, strlen(optarg) + 1);
 
                 /* game ID is set correctly */
                 gflag = 1;
@@ -61,7 +62,7 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
                 /* checks whether a file name is set */
                 if(optind < argc && argv[optind][0] != '-') {
 
-                    strcpy(gameDataPointer -> configFile, argv[optind]);
+                    memcpy(gameDataPointer -> configFile, argv[optind], strlen(argv[optind]) + 1);
                     cflag = 1;
                 }
 
@@ -93,7 +94,7 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
 
     /* default value if -c is not set */
     if (cflag == 0) {
-        strcpy(gameDataPointer -> configFile, "client.conf");
+        memcpy(gameDataPointer -> configFile, DEFAULT_CONFIG, strlen(DEFAULT_CONFIG) + 1);
     }
 
     /* debugging */
@@ -133,7 +134,7 @@ int readConfigFile(struct gameInfo *gameDataPointer) {
             if (stringCompare(key, "Hostname")) {
 
                 /* Extract hostname */
-                strcpy(gameDataPointer -> hostName, value);
+                memcpy(gameDataPointer -> hostName, value, strlen(value) + 1);
                 
             } else if (stringCompare(key, "PortNumber")) {
 
@@ -146,7 +147,7 @@ int readConfigFile(struct gameInfo *gameDataPointer) {
             } else if (stringCompare(key, "GameKindName")) {
 
                 /* Extract game kind name */
-                strcpy(gameDataPointer -> gameKindName, value);
+                memcpy(gameDataPointer -> gameKindName, value, strlen(value) + 1);
             }
         }
     }
