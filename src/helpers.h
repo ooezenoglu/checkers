@@ -27,6 +27,6 @@ int receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize);
 int sendLineToServer(const int sockfd, char *buffer, const char *line);
 bool stringCompare(const char *s1, const char *s2);
 int stringConcat(const char *leftString, const char *rightString, char *dest);
-// char **stringTokenizer(char *s, int *len);
+int stringTokenizer(char *src, char *delim, char **res, int *len);
 
 #endif

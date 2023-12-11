@@ -108,7 +108,7 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
 int readConfigFile(struct gameInfo *gameDataPointer) {
     
     FILE *fp;
-    char line[256];
+    char line[256] = { 0 };
     char *key, *value;
 
     /* open the config file in read mode */
@@ -166,6 +166,8 @@ int readConfigFile(struct gameInfo *gameDataPointer) {
                 return -1;
             }
         }
+
+        memset(line, 0, strlen(line));
     }
 
     fclose(fp);
@@ -274,18 +276,25 @@ int stringConcat(const char *leftString, const char *rightString, char *dest) {
     return 0;
 }
 
-// char **stringTokenizer(char *s, int *len) {
+int stringTokenizer(char *src, char *delim, char **res, int *len) {
 
-//     char **tokenPointer = calloc(10, sizeof(char *));
-//     char *token;
-    
-//     int i = 0;
-//     while ((token = strtok_r(s, " ", &s)) != NULL) {
-//         tokenPointer[i] = token;
-//         i++;
-//     }
+    char *token;
+    int i = 0;
 
-//     *len = i;
+    token = strtok(src, delim);
 
-//     return tokenPointer;
-// }
+    while (token != NULL) {
+        res[i] = token;
+        i++;
+        token = strtok(NULL, delim);
+    }
+
+    *len = i;
+
+    /* debugging */
+    for(int j = 0; j < *len; j++) {
+        printf("TOKEN: %s\n", res[j]);
+    }
+
+    return 0;
+}
