@@ -109,6 +109,7 @@ int readConfigFile(struct gameInfo *gameDataPointer) {
     
     FILE *fp;
     char line[256];
+    char *key, *value;
 
     /* open the config file in read mode */
     if ((fp = fopen(gameDataPointer -> configFile, "r")) == NULL) {
@@ -116,15 +117,14 @@ int readConfigFile(struct gameInfo *gameDataPointer) {
         return -1;
     }
     
-    /* read-in the data until a newline character is reached */
     while(fgets(line, sizeof(line), fp) != NULL) {
 
         /* Remove newline character at the end */
         line[strlen(line)] = '\0';
 
         /* Seperate key and value and remove = */
-        char *key = strtok(line, "=");
-        char *value = strtok(NULL, "=");
+        key = strtok(line, "=");
+        value = strtok(NULL, "=");
 
         /* Remove empty spaces */
         key = strtok(key, " \t\n\r");
