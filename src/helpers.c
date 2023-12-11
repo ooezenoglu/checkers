@@ -106,21 +106,22 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointe
 }
 
 int readConfigFile(struct gameInfo *gameDataPointer) {
+    
+    FILE *fp;
+    char line[256];
 
-    FILE *file = fopen(gameDataPointer -> configFile, "r");
-
-    if (file == NULL) {
+    /* open the config file in read mode */
+    if ((fp = fopen(gameDataPointer -> configFile, "r")) == NULL) {
         perror("Error opening configuration file.");
         return -1;
     }
     
-    char line[256];
-
-    while(fgets(line, sizeof(line), file)) {
+    /* read-in the data until a newline character is reached */
+    while(fgets(line, sizeof(line), fp) != NULL) {
 
         /* Remove newline character at the end */
         line[strlen(line)] = '\0';
-        
+
         /* Seperate key and value and remove = */
         char *key = strtok(line, "=");
         char *value = strtok(NULL, "=");
@@ -129,7 +130,17 @@ int readConfigFile(struct gameInfo *gameDataPointer) {
         key = strtok(key, " \t\n\r");
         value = strtok(value, " \t\n\r");
 
-        if (key != NULL && value != NULL) {
+        if(key == NULL) {
+
+            perror("Missing parameter name.");
+            return -1;
+
+        } else if(value == NULL) {
+
+            perror("Missing parameter value.");
+            return -1;
+
+        } else {
 
             if (stringCompare(key, "Hostname")) {
 
@@ -148,11 +159,16 @@ int readConfigFile(struct gameInfo *gameDataPointer) {
 
                 /* Extract game kind name */
                 memcpy(gameDataPointer -> gameKindName, value, strlen(value) + 1);
+
+            } else {
+
+                perror("Unknown parameter.");
+                return -1;
             }
         }
     }
 
-    fclose(file);
+    fclose(fp);
 
     /* debugging */
     printf("Hostname: %s\n", gameDataPointer -> hostName);
