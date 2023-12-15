@@ -38,8 +38,17 @@ int main(int argc, char *argv[]) {
     } else if(pid == 0) { /* Connector process */
 
         if((gameData = (struct gameInfo*) shmat(segmentID, 0, 0)) == (void*) -1) {
-            perror("Failed to attach shared memory segment to parent (thinker) process.");
+            perror("Failed to attach shared memory segment to child (connector) process.");
         }
+
+        /* store PID of Connector process */
+        gameData -> connectorPID = getpid();
+
+        /* store PID of Thinker process */
+        gameData -> thinkerPID = getppid();
+
+        /* store the client version in the game data struct */
+        memcpy(gameData -> clientVersion, CLIENT_VERSION, strlen(CLIENT_VERSION) + 1);
 
         /* read game ID and desired player number from the console */
         if(parseCommandLineArgs(argc, argv, gameData) < 0) {
@@ -58,9 +67,6 @@ int main(int argc, char *argv[]) {
             printf("Failed to establish connection with %s\n", gameData -> hostName);
             exit(EXIT_FAILURE);
         }
-
-        /* store the client version in the game data struct */
-        memcpy(gameData -> clientVersion, CLIENT_VERSION, strlen(CLIENT_VERSION) + 1);
 
         if (performConnection(sockfd, gameData) < 0) {
             perror("Prologue phase failed. Closing socket...");
