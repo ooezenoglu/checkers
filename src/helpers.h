@@ -10,6 +10,8 @@ struct gameInfo {
     uint16_t portNumber;
     char serverVersion[10];
     char clientVersion[10];
+    int connectorPID;
+    int thinkerPID;
     char gameName[40];
     int thisPlayerNumber;
     char thisPlayerName[20];
