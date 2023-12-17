@@ -25,9 +25,7 @@ int main(int argc, char *argv[]) {
     struct player *oppInfo;
 
     /* create a shared memory segmet to store the game data into */
-    if((shmidGameInfo = shmget(IPC_PRIVATE, sizeof(gameInfo), IPC_CREAT | 0644)) == -1) {
-
-        perror("Failed to create shared memory segment.");
+    if((shmidGameInfo = SHMAlloc(sizeof(gameInfo))) == -1) {
         exit(EXIT_FAILURE);
     }
 
@@ -104,7 +102,6 @@ int main(int argc, char *argv[]) {
 
             /* debugging */
             printWaitDetails(wstatus);
-
 
             if(shmdt(oppInfo) == -1) {
                 perror("Failed to detach shared memory segment (opponents) in the Thinker.");

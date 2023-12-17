@@ -35,5 +35,6 @@ bool stringCompare(const char *s1, const char *s2);
 int stringConcat(const char *leftString, const char *rightString, char *dest);
 int stringTokenizer(char *src, char *delim, char **res, int *len);
 void printWaitDetails(int wstatus);
+int SHMAlloc(size_t size);
 
 #endif

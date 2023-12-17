@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <sys/socket.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include "helpers.h"
 
 #define DEFAULT_CONFIG "client.conf"
@@ -316,4 +318,15 @@ void printWaitDetails(int wstatus) {
                 
         printf("Connector terminated for unknown reasons.\n");
     }
+}
+
+int SHMAlloc(size_t size) {
+
+    int id;
+
+    if((id = shmget(IPC_PRIVATE, size, IPC_CREAT | 0644)) == -1) {
+        perror("Failed to create shared memory segment.");
+    }
+
+    return id;
 }

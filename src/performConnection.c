@@ -150,12 +150,9 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 printf("%i players are playing.\n", gameDataPointer -> playerCount);
             }
 
-            gameDataPointer -> shmidOpponents = shmget(IPC_PRIVATE, gameDataPointer -> playerCount*sizeof(struct player), IPC_CREAT | 0644);
+            gameDataPointer -> shmidOpponents = SHMAlloc(gameDataPointer -> playerCount*sizeof(struct player));
 
-            if(gameDataPointer -> shmidOpponents == -1) {
-                perror("shmget.");
-                return -1;
-            }
+            if(gameDataPointer -> shmidOpponents == -1) { return -1; }
 
             if((oppInfo = (struct player*) shmat(gameDataPointer -> shmidOpponents, 0, 0)) == (void*) -1) {
                 perror("Failed to attach shared memory segment (opponents) to child (connector) process.");
@@ -178,7 +175,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 /* extract player number and store remaining info in temp */
                 sscanf(buffer, "+ %i %[^\n]", &(oppInfo[i].playerNumber), temp);
                 
-                oppInfo[i].isReady = temp[strlen(temp)-1];
+                oppInfo[i].isReady = temp[strlen(temp)-1] - '0';
 
                 memcpy(oppInfo[i].playerName, temp, strlen(temp) - 2); /* - 2 to not copy space and player number */
 
