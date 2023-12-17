@@ -16,9 +16,13 @@ struct gameInfo {
     int thisPlayerNumber;
     char thisPlayerName[20];
     int playerCount;
-    int oppPlayerNumber;
-    char oppPlayerName[20];
-    int oppPlayerReady;
+    int shmidOpponents;
+};
+
+struct player {
+    int playerNumber;
+    char playerName[20];
+    int isReady;
 };
 
 int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameDataPointer);

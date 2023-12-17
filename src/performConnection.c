@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <inttypes.h>
@@ -17,6 +19,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
     char desPlayerNumberAsStr[12];
     char *pstart, *pend;
     int istart, iend, j;
+    struct player *oppInfo;
 
     while(!endOfPrologReached) {
 
@@ -147,62 +150,46 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 printf("%i players are playing.\n", gameDataPointer -> playerCount);
             }
 
-            /* read in the opponents player number, name and whether they
-            are ready; note that this is no separate else-if case bc the 
-            response is of form "+ <<Player-Number>> <<Player-Name>> <<Ready>>"
-            which is difficult to parse */
-            if(receiveLineFromServer(sockfd, buffer, BUFFER_SIZE) < 0) {
-                perror("Failed to receive line from server.");
+            gameDataPointer -> shmidOpponents = shmget(IPC_PRIVATE, gameDataPointer -> playerCount*sizeof(struct player), IPC_CREAT | 0644);
+
+            if(gameDataPointer -> shmidOpponents == -1) {
+                perror("shmget.");
                 return -1;
             }
 
-            /* pointer to the first occurence of space character (+2 bc of preceding '+ ') */
-            if((pstart = strchr(buffer + 2, ' ')) == NULL) {
-                perror("strchr: Matching character not found.");
-                return -1;
+            if((oppInfo = (struct player*) shmat(gameDataPointer -> shmidOpponents, 0, 0)) == (void*) -1) {
+                perror("Failed to attach shared memory segment (opponents) to child (connector) process.");
             }
 
-            /* infer the index of the space before the player name starts */
-            istart = pstart - buffer;
-            
-            /* pointer to the last occurence of space character */
-            if((pend = strrchr(buffer, ' ')) == NULL) {
-                perror("strrchr: Matching character not found.");
-                return -1;
+            /* store the opponent data */
+            for(int i = 0; i < gameDataPointer -> playerCount-1; i++) {
+
+                /* read in the opponents player number, name and whether they
+                are ready; note that this is no separate else-if case bc the 
+                response is of form "+ <<Player-Number>> <<Player-Name>> <<Ready>>"
+                which is difficult to parse */
+                if(receiveLineFromServer(sockfd, buffer, BUFFER_SIZE) < 0) {
+                    perror("Failed to receive line from server.");
+                    return -1;
+                }
+
+                char temp[BUFFER_SIZE];
+
+                /* extract player number and store remaining info in temp */
+                sscanf(buffer, "+ %i %[^\n]", &(oppInfo[i].playerNumber), temp);
+                
+                oppInfo[i].isReady = temp[strlen(temp)-1];
+
+                memcpy(oppInfo[i].playerName, temp, strlen(temp) - 2); /* - 2 to not copy space and player number */
+
+                 /* print opponents player number, name and whether they are ready */
+                if(oppInfo[i].isReady == 1) {
+                    printf("Player %i (%s) is ready.\n", oppInfo[i].playerNumber, oppInfo[i].playerName);
+                } else {
+                    printf("Player %i (%s) is not ready.\n", oppInfo[i].playerNumber, oppInfo[i].playerName);
+                }
             }
-
-            /* infer the index of the space after the player name ends */
-            iend = pend - buffer;
-
-            /* store the name of the opponent (+1 to skip preceding space) */
-            j = 0;
-            for(int i = istart + 1; i < iend; i++) {
-                (gameDataPointer -> oppPlayerName)[j] = buffer[i];
-                j++;
-            }
-
-            /* add the null terminator at the end */
-            (gameDataPointer -> oppPlayerName)[j] = '\0';
-
-            /* store the player number of the opponent */
-            if(sscanf(buffer + istart - 1, "%i", &(gameDataPointer -> oppPlayerNumber)) != 1) {
-                perror("Could not store game data.");
-                return -1;
-            }
-
-            /* store ready status of the opponent */
-            if(sscanf(buffer + iend + 1, "%i", &(gameDataPointer -> oppPlayerReady)) != 1) {
-                perror("Could not store game data.");
-                return -1;
-            }
-
-            /* print opponents player number, name and whether they are ready */
-            if(gameDataPointer -> oppPlayerReady == 1) {
-                printf("Player %i (%s) is ready.\n", gameDataPointer -> oppPlayerNumber, gameDataPointer -> oppPlayerName);
-            } else {
-                printf("Player %i (%s) is not ready.\n", gameDataPointer -> oppPlayerNumber, gameDataPointer -> oppPlayerName);
-            }
-            
+                
         } else if(stringCompare(buffer, "+ ENDPLAYERS")) {
 
             endOfPrologReached = true;
@@ -213,6 +200,11 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
             perror("Something went wrong while setting up the game.");
             return -1;
         }
+    }
+
+    if(shmdt(oppInfo) == -1) {
+        perror("Failed to detach shared memory segment (opponents) in the Connector.");
+        return -1;
     }
 
     printf("Prologue phase successful. Starting the game now.\n");
