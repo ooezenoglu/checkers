@@ -20,7 +20,7 @@
 int main(int argc, char *argv[]) {
 
     pid_t pid;
-    int segmentID, cstatus, sockfd;
+    int segmentID, wstatus, sockfd;
     struct gameInfo *gameData;
 
     /* create a shared memory segmet to store the game data into */
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
         }
 
         /* waiting for Connector to finish execution */
-        if((waitpid(pid, &cstatus, 0)) < 0) {
+        if((waitpid(pid, &wstatus, 0)) < 0) {
 
             perror("Failed to wait for Connector process.");
             exit(EXIT_FAILURE);
@@ -95,21 +95,7 @@ int main(int argc, char *argv[]) {
         } else {
 
             /* debugging */
-            if (WIFEXITED(cstatus)) {
-                printf("Connector exited with status %d.\n", WEXITSTATUS(cstatus));
-
-            } else if (WIFSIGNALED(cstatus)) {
-
-                printf("Connector was terminated by signal %d.\n", WTERMSIG(cstatus));
-
-            } else if (WIFSTOPPED(cstatus)) {
-
-                printf("Connector was stopped by signal %d.\n", WSTOPSIG(cstatus));
-
-            } else {
-                
-                printf("Connector terminated for unknown reasons.\n");
-            }
+            printWaitDetails(wstatus);
 
             if(shmdt(gameData) == -1) {
                 perror("Failed to detach shared memory segment in the Thinker.");

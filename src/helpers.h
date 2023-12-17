@@ -30,5 +30,6 @@ int sendLineToServer(const int sockfd, char *buffer, const char *line);
 bool stringCompare(const char *s1, const char *s2);
 int stringConcat(const char *leftString, const char *rightString, char *dest);
 int stringTokenizer(char *src, char *delim, char **res, int *len);
+void printWaitDetails(int wstatus);
 
 #endif
