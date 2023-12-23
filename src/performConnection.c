@@ -27,7 +27,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
             perror(concatStr);
             return -1;
 
-        } else if(stringCompare(buffer, "+ MNM Gameserver")) {
+        } else if(startsWith(buffer, "+ MNM Gameserver")) {
 
             /* store & print gameserver version */
             if(sscanf(buffer, "%*s%*s%*s%s", gameDataPointer -> serverVersion) != 1) { 
@@ -51,7 +51,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 memset(concatStr, 0, strlen(concatStr));
             }
 
-        } else if(stringCompare(buffer, "+ Client version accepted - please send Game-ID to join")) {
+        } else if(startsWith(buffer, "+ Client version accepted - please send Game-ID to join")) {
 
             printf("MNM Gameserver accepted client version %s\n", gameDataPointer -> clientVersion); 
 
@@ -69,13 +69,13 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 memset(concatStr, 0, strlen(concatStr));
             }
 
-        } else if(stringCompare(buffer, "+ PLAYING")) {
+        } else if(startsWith(buffer, "+ PLAYING")) {
 
             /* store, check & print gamekind */
             if(sscanf(buffer, "%*s%*s%s", gameDataPointer -> gameKindName) != 1) {
                 perror("Could not store game data.");
                 return -1;
-            } else if(!stringCompare(gameDataPointer -> gameKindName, "Checkers")) {
+            } else if(!startsWith(gameDataPointer -> gameKindName, "Checkers")) {
                 perror("Gamekind must be \"Checkers\".");
                 return -1;
             } else {
@@ -119,7 +119,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 memset(concatStr, 0, strlen(concatStr));
             }
 
-        } else if(stringCompare(buffer, "+ YOU")) {
+        } else if(startsWith(buffer, "+ YOU")) {
 
             /* store & print player number and player name */
             if(sscanf(buffer, "%*s %*s %i %[^\n]", &(gameDataPointer -> thisPlayerNumber), gameDataPointer -> thisPlayerName) != 2) {
@@ -129,7 +129,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 printf("You are Player %i (%s).\n", gameDataPointer -> thisPlayerNumber, gameDataPointer -> thisPlayerName);
             }
         
-        } else if(stringCompare(buffer, "+ TOTAL")) {
+        } else if(startsWith(buffer, "+ TOTAL")) {
 
             /* store & print total player count */
             if(sscanf(buffer, "%*s %*s %i", &(gameDataPointer -> nPlayers)) != 1) {
@@ -176,7 +176,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 }
             }
                 
-        } else if(stringCompare(buffer, "+ ENDPLAYERS")) {
+        } else if(startsWith(buffer, "+ ENDPLAYERS")) {
 
             endOfPrologReached = true;
         

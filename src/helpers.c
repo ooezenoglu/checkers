@@ -134,12 +134,12 @@ int readConfigFile(struct gameInfo *gameInfoPtr) {
 
         } else {
 
-            if (stringCompare(key, "Hostname")) {
+            if (stringEquals(key, "Hostname")) {
 
                 /* Extract hostname */
                 memcpy(gameInfoPtr -> hostName, value, strlen(value) + 1);
                 
-            } else if (stringCompare(key, "PortNumber")) {
+            } else if (stringEquals(key, "PortNumber")) {
 
                 /* Extract port number */
                 if(sscanf(value, "%"SCNu16, &(gameInfoPtr -> port)) != 1) { 
@@ -147,7 +147,7 @@ int readConfigFile(struct gameInfo *gameInfoPtr) {
                     return -1;
                 }
 
-            } else if (stringCompare(key, "GameKindName")) {
+            } else if (stringEquals(key, "GameKindName")) {
 
                 /* Extract game kind name */
                 memcpy(gameInfoPtr -> gameKindName, value, strlen(value) + 1);
@@ -219,13 +219,23 @@ int sendLineToServer(const int sockfd, char *buffer, const char *line) {
     return 0;
 }
 
-bool stringCompare(const char *s1, const char *s2) {
+bool startsWith(const char *s1, const char *s2) {
 
-    /* TODO exact matches should also be possible */
-    
     int n = (strlen(s1) <= strlen(s2)) ? strlen(s1) : strlen(s2);
 
     return strncmp(s1, s2, n) == 0;
+}
+
+bool stringEquals(const char *s1, const char *s2) {
+
+    int s1Length = strlen(s1);
+    int s2Length = strlen(s2);
+
+    if(s1Length != s2Length) {
+        return false;
+    }
+
+    return strncmp(s1, s2, s1Length) == 0;
 }
 
 int stringConcat(const char *leftString, const char *rightString, char *dest) {
