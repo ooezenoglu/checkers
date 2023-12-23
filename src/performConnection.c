@@ -1,12 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <inttypes.h>
 #include "helpers.h"
 
 #define BUFFER_SIZE 255
@@ -17,8 +8,6 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
     char concatStr[BUFFER_SIZE] = { 0 };
     bool endOfPrologReached = false;
     char desPlayerNumberAsStr[12];
-    char *pstart, *pend;
-    int istart, iend, j;
     struct player *oppInfo;
 
     while(!endOfPrologReached) {
@@ -110,10 +99,10 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
             }
 
             /* determine desired player number */
-            if (gameDataPointer -> desPlayerNumber == -1) {
+            if (gameDataPointer -> requestedPlayerNumber == -1) {
                 desPlayerNumberAsStr[0] = '\0';  /* "empty" string */
             } else {
-                sprintf(desPlayerNumberAsStr, "%i", gameDataPointer -> desPlayerNumber); 
+                sprintf(desPlayerNumberAsStr, "%i", gameDataPointer -> requestedPlayerNumber); 
             }
 
             /* generate response regarding desired player number */
@@ -143,14 +132,14 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
         } else if(stringCompare(buffer, "+ TOTAL")) {
 
             /* store & print total player count */
-            if(sscanf(buffer, "%*s %*s %i", &(gameDataPointer -> playerCount)) != 1) {
+            if(sscanf(buffer, "%*s %*s %i", &(gameDataPointer -> nPlayers)) != 1) {
                 perror("Could not store game data.");
                 return -1;
             } else {
-                printf("%i players are playing.\n", gameDataPointer -> playerCount);
+                printf("%i players are playing.\n", gameDataPointer -> nPlayers);
             }
 
-            gameDataPointer -> shmidOpponents = SHMAlloc(gameDataPointer -> playerCount*sizeof(struct player));
+            gameDataPointer -> shmidOpponents = SHMAlloc(gameDataPointer -> nPlayers*sizeof(struct player));
 
             if(gameDataPointer -> shmidOpponents == -1) { return -1; }
 
@@ -159,7 +148,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
             }
 
             /* store the opponent data */
-            for(int i = 0; i < gameDataPointer -> playerCount-1; i++) {
+            for(int i = 0; i < gameDataPointer -> nPlayers-1; i++) {
 
                 /* read in the opponents player number, name and whether they
                 are ready; note that this is no separate else-if case bc the 

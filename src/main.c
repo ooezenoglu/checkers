@@ -1,18 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/wait.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <arpa/inet.h>
 #include "helpers.h"
 
 #define CLIENT_VERSION "2.3"
@@ -34,10 +19,10 @@ int main(int argc, char *argv[]) {
         perror("Failed to fork.");
         exit(EXIT_FAILURE);
 
-    } else if(pid == 0) { /* Connector process */
+    } else if(pid == 0) { /* Connector process (child) */
 
         if((gameInfo = (struct gameInfo*) shmat(shmidGameInfo, 0, 0)) == (void*) -1) {
-            perror("Failed to attach shared memory segment (game info) to child (connector) process.");            
+            perror("Failed to attach shared memory segment (game info) to child (Connector) process.");
         }
 
         /* store PID of Connector process */
@@ -49,7 +34,7 @@ int main(int argc, char *argv[]) {
         /* store the client version in the game data struct */
         memcpy(gameInfo -> clientVersion, CLIENT_VERSION, strlen(CLIENT_VERSION) + 1);
 
-        /* read game ID and desired player number from the console */
+        /* read game ID and requested player number from the console */
         if(parseCommandLineArgs(argc, argv, gameInfo) < 0) {
             perror("Failed to parse command line arguments.");
             exit(EXIT_FAILURE);
@@ -62,11 +47,12 @@ int main(int argc, char *argv[]) {
         }
 
         /* connect to game server via TCP/IP socket */
-        if((sockfd = connectToServer(gameInfo -> hostName, gameInfo -> portNumber)) < 0) {
-            printf("Failed to establish connection with %s\n", gameInfo -> hostName);
+        if((sockfd = connectToServer(gameInfo -> hostName, gameInfo -> port)) < 0) {
+            perror("Failed to establish connection with Game Server.");
             exit(EXIT_FAILURE);
         }
 
+        /* perform prologue phase */
         if (performConnection(sockfd, gameInfo) < 0) {
             perror("Prologue phase failed. Closing socket...");
             close(sockfd);
@@ -79,17 +65,17 @@ int main(int argc, char *argv[]) {
 
         exit(EXIT_SUCCESS);
 
-    } else { /* Thinker process */
+    } else { /* Thinker process (parent) */
 
         if((gameInfo = (struct gameInfo*) shmat(shmidGameInfo, 0, 0)) == (void*) -1) {
-            perror("Failed to attach shared memory segment (game info) to parent (thinker) process.");
+            perror("Failed to attach shared memory segment (game info) to parent (Thinker) process.");
         }
 
         /* TODO remove this once Thinker attaches oppInfo when Connector is finished storing the opponent data */
         sleep(1);
 
         if((oppInfo = (struct player*) shmat(gameInfo -> shmidOpponents, 0, 0)) == (void*) -1) {
-            perror("Failed to attach shared memory segment (opponents) to parent (thinker) process.");
+            perror("Failed to attach shared memory segment (opponents) to parent (Thinker) process.");
         }
 
         /* waiting for Connector to finish execution */
@@ -120,7 +106,7 @@ int main(int argc, char *argv[]) {
                 perror("Failed to destroy shared memory segment (game info).");
             }
 
-            /* finish execution since connector terminated */
+            /* finish execution since Connector terminated */
             exit(EXIT_SUCCESS);
         }
     }
