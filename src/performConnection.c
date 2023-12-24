@@ -139,13 +139,11 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 printf("%i players are playing.\n", gameDataPointer -> nPlayers);
             }
 
+            /* create a shared memory segment for the opponents */
             gameDataPointer -> shmidOpponents = SHMAlloc(gameDataPointer -> nPlayers*sizeof(struct player));
 
-            if(gameDataPointer -> shmidOpponents == -1) { return -1; }
-
-            if((oppInfo = (struct player*) shmat(gameDataPointer -> shmidOpponents, 0, 0)) == (void*) -1) {
-                perror("Failed to attach shared memory segment (opponents) to child (connector) process.");
-            }
+            /* attach opponent info to Connector process */
+            oppInfo = (struct player*) SHMAttach(gameDataPointer -> shmidOpponents);
 
             /* store the opponent data */
             for(int i = 0; i < gameDataPointer -> nPlayers-1; i++) {
@@ -188,10 +186,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
         }
     }
 
-    if(shmdt(oppInfo) == -1) {
-        perror("Failed to detach shared memory segment (opponents) in the Connector.");
-        return -1;
-    }
+    SHMDetach(oppInfo);
 
     printf("Prologue phase successful. Starting the game now.\n");
 

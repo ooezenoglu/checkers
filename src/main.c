@@ -10,9 +10,7 @@ int main(int argc, char *argv[]) {
     struct player *oppInfo;
 
     /* create a shared memory segmet to store the game data into */
-    if((shmidGameInfo = SHMAlloc(sizeof(gameInfo))) == -1) {
-        exit(EXIT_FAILURE);
-    }
+    shmidGameInfo = SHMAlloc(sizeof(gameInfo));
 
     if((pid = fork()) < 0) {
         
@@ -21,9 +19,8 @@ int main(int argc, char *argv[]) {
 
     } else if(pid == 0) { /* Connector process (child) */
 
-        if((gameInfo = (struct gameInfo*) shmat(shmidGameInfo, 0, 0)) == (void*) -1) {
-            perror("Failed to attach shared memory segment (game info) to child (Connector) process.");
-        }
+        /* attach game info to Connector process */
+        gameInfo = (struct gameInfo*) SHMAttach(shmidGameInfo);
 
         /* store PID of Connector process */
         gameInfo -> connectorPID = getpid();
@@ -59,24 +56,21 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
 
-        if(shmdt(gameInfo) == -1) {
-            perror("Failed to detach shared memory segment (game info) in the Connector.");
-        }
+        SHMDetach(gameInfo);
+        SHMDestroy(gameInfo -> shmidOpponents);
 
         exit(EXIT_SUCCESS);
 
     } else { /* Thinker process (parent) */
 
-        if((gameInfo = (struct gameInfo*) shmat(shmidGameInfo, 0, 0)) == (void*) -1) {
-            perror("Failed to attach shared memory segment (game info) to parent (Thinker) process.");
-        }
-
+        /* attach game info to Thinker process */
+        gameInfo = (struct gameInfo*) SHMAttach(shmidGameInfo);
+        
         /* TODO remove this once Thinker attaches oppInfo when Connector is finished storing the opponent data */
         sleep(1);
 
-        if((oppInfo = (struct player*) shmat(gameInfo -> shmidOpponents, 0, 0)) == (void*) -1) {
-            perror("Failed to attach shared memory segment (opponents) to parent (Thinker) process.");
-        }
+        /* attach opponent info to Thinker process */
+        oppInfo = (struct player*) SHMAttach(gameInfo -> shmidOpponents);
 
         /* waiting for Connector to finish execution */
         if((waitpid(pid, &wstatus, 0)) < 0) {
@@ -89,22 +83,9 @@ int main(int argc, char *argv[]) {
             /* debugging */
             printWaitDetails(wstatus);
 
-            if(shmdt(oppInfo) == -1) {
-                perror("Failed to detach shared memory segment (opponents) in the Thinker.");
-            }
-
-            if(shmctl(gameInfo -> shmidOpponents, IPC_RMID, NULL) == -1) {
-                perror("Failed to destroy shared memory segment (opponents).");
-            }
-
-            if(shmdt(gameInfo) == -1) {
-                perror("Failed to detach shared memory segment (game info) in the Thinker.");
-            }
-
-            /* destroy shared memory segment */
-            if(shmctl(shmidGameInfo, IPC_RMID, NULL) == -1) {
-                perror("Failed to destroy shared memory segment (game info).");
-            }
+            SHMDetach(oppInfo);
+            SHMDetach(gameInfo);
+            SHMDestroy(shmidGameInfo);
 
             /* finish execution since Connector terminated */
             exit(EXIT_SUCCESS);

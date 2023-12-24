@@ -52,5 +52,8 @@ int stringConcat(const char *leftString, const char *rightString, char *dest);
 int stringTokenizer(char *src, char *delim, char **res, int *len);
 void printWaitDetails(int wstatus);
 int SHMAlloc(size_t size);
+void *SHMAttach(int shmid);
+void SHMDetach(const void *shmaddr);
+void SHMDestroy(int shmid);
 
 #endif
