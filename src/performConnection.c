@@ -12,10 +12,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
 
     while(!endOfPrologReached) {
 
-        if(receiveLineFromServer(sockfd, buffer, BUFFER_SIZE) < 0) {
-            perror("Failed to receive line from server.");
-            return -1;
-        }
+        receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
 
         if (buffer[0] == '-') {
             
@@ -37,44 +34,31 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 printf("Connecting with the MNM Gameserver %s...\n", gameDataPointer -> serverVersion);
             }
 
-            if(receiveLineFromServer(sockfd, buffer, BUFFER_SIZE) < 0) {
-                perror("Failed to receive line from server.");
-                return -1;
-            }
-
+            /* read & print message of the day */
+            receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
             printf("The message of the day is: %s", buffer+2);
 
             /* generate & send client version response */
-            if (stringConcat("VERSION ", gameDataPointer -> clientVersion, concatStr) < 0) {
-                perror("Could not generate client version response.");
-                return -1;
-            } else {
-                /* send client version (note that it must match the game server major version) */
-                if(sendLineToServer(sockfd, buffer, concatStr) < 0) {
-                    perror("Failed to send client version to server.");
-                    return -1;
-                }
-                /* clear helper variable after use */
-                memset(concatStr, 0, strlen(concatStr));
-            }
+            stringConcat("VERSION ", gameDataPointer -> clientVersion, concatStr);
+
+            /* send client version (note that it must match the game server major version) */
+            sendLineToServer(sockfd, buffer, concatStr);
+            
+            /* clear helper variable after use */
+            memset(concatStr, 0, strlen(concatStr));
 
         } else if(startsWith(buffer, "+ Client version accepted - please send Game-ID to join")) {
 
             printf("MNM Gameserver accepted client version %s\n", gameDataPointer -> clientVersion); 
 
             /* genererate & send game ID response */
-            if (stringConcat("ID ", gameDataPointer -> gameID, concatStr) < 0) {
-                perror("Could not generate game ID response.");
-                return -1;
-            } else {
-                /* send game ID */
-                if(sendLineToServer(sockfd, buffer, concatStr) < 0) {
-                    perror("Failed to send game ID to server.");
-                    return -1;
-                }
-                /* clear helper variable after use */
-                memset(concatStr, 0, strlen(concatStr));
-            }
+            stringConcat("ID ", gameDataPointer -> gameID, concatStr);
+
+            /* send game ID */
+            sendLineToServer(sockfd, buffer, concatStr);
+
+            /* clear helper variable after use */
+            memset(concatStr, 0, strlen(concatStr));
 
         } else if(startsWith(buffer, "+ PLAYING")) {
 
@@ -92,10 +76,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
             /* read in the game name; note that this is no separate 
             else-if case bc the response is of form "+ <<Game-Name>>"
             which is difficult to parse */
-            if(receiveLineFromServer(sockfd, buffer, BUFFER_SIZE) < 0) {
-                perror("Failed to receive line from server.");
-                return -1;
-            }
+            receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
 
             /* store & print game name */
             if(sscanf(buffer, "%*s %[^\n]", gameDataPointer -> gameName) != 1) {
@@ -112,19 +93,14 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 sprintf(desPlayerNumberAsStr, "%i", gameDataPointer -> requestedPlayerNumber); 
             }
 
-            /* generate response regarding desired player number */
-            if (stringConcat("PLAYER ", desPlayerNumberAsStr, concatStr) < 0) {
-                perror("Could not generate response regarding desired player number.");
-                return -1;
-            } else {
-                /* send desired player number */
-                if(sendLineToServer(sockfd, buffer, concatStr) < 0) {
-                    perror("Failed to send desired player number to server.");
-                    return -1;
-                }
-                /* clear helper variable */
-                memset(concatStr, 0, strlen(concatStr));
-            }
+            /* generate response regarding requested player number */
+            stringConcat("PLAYER ", desPlayerNumberAsStr, concatStr);
+
+            /* send desired player number */
+            sendLineToServer(sockfd, buffer, concatStr);
+
+            /* clear helper variable */
+            memset(concatStr, 0, strlen(concatStr));
 
         } else if(startsWith(buffer, "+ YOU")) {
 
@@ -159,10 +135,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 are ready; note that this is no separate else-if case bc the 
                 response is of form "+ <<Player-Number>> <<Player-Name>> <<Ready>>"
                 which is difficult to parse */
-                if(receiveLineFromServer(sockfd, buffer, BUFFER_SIZE) < 0) {
-                    perror("Failed to receive line from server.");
-                    return -1;
-                }
+                receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
 
                 char temp[BUFFER_SIZE];
 

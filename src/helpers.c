@@ -172,7 +172,7 @@ int readConfigFile(struct gameInfo *gameInfoPtr) {
     return 0;
 }
 
-int receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize) {
+void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize) {
 
     /* clear buffer before use */
     memset(buffer, 0, strlen(buffer));
@@ -182,7 +182,7 @@ int receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize) 
 
         if(recv(sockfd, &buffer[i], 1, 0) != 1) {
             perror("Failed to receive line from server.");
-            return -1;
+            exit(EXIT_FAILURE);
         }
 
         if (buffer[i] == '\n') {
@@ -193,11 +193,9 @@ int receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize) 
 
     /* debugging */
     // printf("S: %s\n", buffer);
-
-    return 0;
 }
 
-int sendLineToServer(const int sockfd, char *buffer, const char *line) {
+void sendLineToServer(const int sockfd, char *buffer, const char *line) {
 
     /* clear buffer before use */
     memset(buffer, 0, strlen(buffer));
@@ -205,18 +203,16 @@ int sendLineToServer(const int sockfd, char *buffer, const char *line) {
     /* write into the buffer and finish with newline character */
     if(sprintf(&buffer[0], "%s\n", line) < 0) {
         perror("Failed to write line to buffer.");
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     if(send(sockfd, buffer, strlen(buffer), 0) == -1) {
         perror("Failed to send line to server.");
-        return -1; 
+        exit(EXIT_FAILURE);
     }
 
     /* debugging */
     // printf("C: %s\n", buffer);
-
-    return 0;
 }
 
 bool startsWith(const char *s1, const char *s2) {
@@ -238,49 +234,43 @@ bool stringEquals(const char *s1, const char *s2) {
     return strncmp(s1, s2, s1Length) == 0;
 }
 
-int stringConcat(const char *leftString, const char *rightString, char *dest) {
+void stringConcat(const char *leftString, const char *rightString, char *dest) {
 
     if(leftString == NULL && rightString != NULL) {
         /* copy the right string + /0 to the destination */
         if(memcpy(dest, rightString, strlen(rightString) + 1) == NULL) {
             perror("Failed to copy string.");
-            return -1;
+            exit(EXIT_FAILURE);
         }
-
-        return 0;
     }
 
     if(leftString != NULL && rightString == NULL) { 
         /* copy the left string + /0 to the destination */
         if(memcpy(dest, leftString, strlen(leftString) + 1) == NULL) {
             perror("Failed to copy string.");
-            return -1;
+            exit(EXIT_FAILURE);
         };
-
-        return 0;
     }
 
     if(leftString == NULL && rightString == NULL) {
         perror("Both string arguments are NULL.");
-        return -1; 
+        exit(EXIT_FAILURE);
     }
 
     /* copy the left string to the destination */
     if(memcpy(dest, leftString, strlen(leftString)) == NULL) {
         perror("Failed to copy string.");
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     /* concatenate the right string and its null terminator to the destination */
     if(strncat(dest, rightString, strlen(rightString) + 1) == NULL) {
         perror("Failed to concatenate strings.");
-        return -1;
+        exit(EXIT_FAILURE);
     }
-
-    return 0;
 }
 
-int stringTokenizer(char *src, char *delim, char **res, int *len) {
+void stringTokenizer(char *src, char *delim, char **res, int *len) {
 
     char *token;
     int i = 0;
@@ -299,8 +289,6 @@ int stringTokenizer(char *src, char *delim, char **res, int *len) {
     for(int j = 0; j < *len; j++) {
         printf("TOKEN: %s\n", res[j]);
     }
-
-    return 0;
 }
 
 void printWaitDetails(int wstatus) {
