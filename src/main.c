@@ -1,6 +1,6 @@
 #include "helpers.h"
 
-#define CLIENT_VERSION "2.3"
+#define CLIENT_VERSION "3.1"
 
 int main(int argc, char *argv[]) {
 

@@ -37,6 +37,13 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 printf("Connecting with the MNM Gameserver %s...\n", gameDataPointer -> serverVersion);
             }
 
+            if(receiveLineFromServer(sockfd, buffer, BUFFER_SIZE) < 0) {
+                perror("Failed to receive line from server.");
+                return -1;
+            }
+
+            printf("The message of the day is: %s", buffer+2);
+
             /* generate & send client version response */
             if (stringConcat("VERSION ", gameDataPointer -> clientVersion, concatStr) < 0) {
                 perror("Could not generate client version response.");
