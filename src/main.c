@@ -12,6 +12,11 @@ int main(int argc, char *argv[]) {
     /* create a shared memory segmet to store the game data into */
     shmidGameInfo = SHMAlloc(sizeof(gameInfo));
 
+     /* attach game info to Thinker process */
+    gameInfo = (struct gameInfo*) SHMAttach(shmidGameInfo);
+
+    gameInfo -> shmOppAttachable = false;
+
     if((pid = fork()) < 0) {
         
         perror("Failed to fork.");
@@ -56,18 +61,20 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
 
-        SHMDetach(gameInfo);
+        /* workaround so that the Connector destroys the opponent 
+        segment only if the Thinker attached it first */
+        sleep(2);
+
         SHMDestroy(gameInfo -> shmidOpponents);
+        SHMDetach(gameInfo);
 
         exit(EXIT_SUCCESS);
 
     } else { /* Thinker process (parent) */
 
-        /* attach game info to Thinker process */
-        gameInfo = (struct gameInfo*) SHMAttach(shmidGameInfo);
-        
-        /* TODO remove this once Thinker attaches oppInfo when Connector is finished storing the opponent data */
-        sleep(1);
+        /* TODO find a more elegant way to do this (semaphore? signal?) */
+        /* attach oppInfo when Connector is finished storing the opponent data */
+        while(gameInfo -> shmOppAttachable == false) { }
 
         /* attach opponent info to Thinker process */
         oppInfo = (struct player*) SHMAttach(gameInfo -> shmidOpponents);

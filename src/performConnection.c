@@ -153,6 +153,8 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                     printf("Player %i (%s) is not ready.\n", oppInfo[i].playerNumber, oppInfo[i].playerName);
                 }
             }
+
+            gameDataPointer -> shmOppAttachable = true;
                 
         } else if(startsWith(buffer, "+ ENDPLAYERS")) {
 

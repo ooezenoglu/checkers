@@ -32,6 +32,7 @@ struct gameInfo {
     char thisPlayerName[20];
     int nPlayers;
     int shmidOpponents;
+    bool shmOppAttachable;
 };
 
 struct player {
