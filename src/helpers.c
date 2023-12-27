@@ -2,6 +2,50 @@
 
 #define DEFAULT_CONFIG "client.conf"
 
+void cleanup() {
+
+    if(sockfd != -1) {
+        printf("Closing socket...\n");
+        close(sockfd);
+    }
+}
+
+void cleanupThinker() {
+
+    if(thinkerAttachedOppInfo) {
+        printf("Thinker: Detaching Opponent Info SHM segment...\n");
+        SHMDetach(oppInfo);
+    }
+
+    if(thinkerAttachedGameInfo) {
+        printf("Thinker: Detaching Game Info SHM segment...\n");
+        SHMDetach(gameInfo);
+        SHMDestroy(shmidGameInfo);
+    }
+}
+
+void cleanupConnector() {
+    
+    if(connectorAttachedOppInfo) {
+        printf("Connector: Detaching Opponent Info SHM segment...\n");
+        SHMDetach(oppInfo);
+        SHMDestroy(gameInfo -> shmidOpponents);
+    }
+
+    if(connectorAttachedGameInfo) {
+        printf("Connector: Detaching Game Info SHM segment...\n");
+        SHMDetach(gameInfo);
+    }
+}
+
+void attachOppInfo() {
+
+    /* attach opponent info to Thinker process */
+    printf("Thinker: Attaching Opponent Info SHM segment...\n");
+    oppInfo = (struct player*) SHMAttach(gameInfo -> shmidOpponents);
+    thinkerAttachedOppInfo = true;
+}
+
 int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameInfoPtr) {
 
     int opt;

@@ -15,6 +15,7 @@
 #include <sys/wait.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <signal.h>
 
 struct gameInfo {
     char gameID[15];
@@ -32,7 +33,6 @@ struct gameInfo {
     char thisPlayerName[20];
     int nPlayers;
     int shmidOpponents;
-    bool shmOppAttachable;
 };
 
 struct player {
@@ -41,6 +41,10 @@ struct player {
     int isReady;
 };
 
+void cleanup();
+void cleanupThinker();
+void cleanupConnector();
+void attachOppInfo();
 int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameInfoPtr);
 int readConfigFile(struct gameInfo *gameInfoPtr);
 int connectToServer(const char *host, const int port);
@@ -56,5 +60,14 @@ int SHMAlloc(size_t size);
 void *SHMAttach(int shmid);
 void SHMDetach(const void *shmaddr);
 void SHMDestroy(int shmid);
+
+extern int shmidGameInfo;
+extern int sockfd;
+extern struct gameInfo *gameInfo;
+extern struct player *oppInfo;
+extern bool thinkerAttachedGameInfo;
+extern bool thinkerAttachedOppInfo;
+extern bool connectorAttachedGameInfo;
+extern bool connectorAttachedOppInfo;
 
 #endif

@@ -2,20 +2,26 @@
 
 #define CLIENT_VERSION "3.1"
 
-int main(int argc, char *argv[]) {
+pid_t pid;
+int shmidGameInfo, wstatus;
+int sockfd = -1;
+struct gameInfo *gameInfo;
+struct player *oppInfo;
+bool thinkerAttachedGameInfo = false;
+bool thinkerAttachedOppInfo = false;
+bool connectorAttachedGameInfo = false;
+bool connectorAttachedOppInfo = false;
 
-    pid_t pid;
-    int shmidGameInfo, wstatus, sockfd;
-    struct gameInfo *gameInfo;
-    struct player *oppInfo;
+int main(int argc, char *argv[]) {
+    atexit(cleanup);
+    signal(SIGUSR1, attachOppInfo);
 
     /* create a shared memory segmet to store the game data into */
     shmidGameInfo = SHMAlloc(sizeof(gameInfo));
 
-     /* attach game info to Thinker process */
+    /* attach game info to Thinker process */
     gameInfo = (struct gameInfo*) SHMAttach(shmidGameInfo);
-
-    gameInfo -> shmOppAttachable = false;
+    thinkerAttachedGameInfo = true;
 
     if((pid = fork()) < 0) {
         
@@ -23,9 +29,11 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
 
     } else if(pid == 0) { /* Connector process (child) */
+        atexit(cleanupConnector);
 
         /* attach game info to Connector process */
         gameInfo = (struct gameInfo*) SHMAttach(shmidGameInfo);
+        connectorAttachedGameInfo = true;
 
         /* store PID of Connector process */
         gameInfo -> connectorPID = getpid();
@@ -56,46 +64,31 @@ int main(int argc, char *argv[]) {
 
         /* perform prologue phase */
         if (performConnection(sockfd, gameInfo) < 0) {
-            perror("Prologue phase failed. Closing socket...");
-            close(sockfd);
+            perror("Prologue phase failed...");
             exit(EXIT_FAILURE);
         }
-
+        
         /* workaround so that the Connector destroys the opponent 
         segment only if the Thinker attached it first */
-        sleep(2);
+        sleep(3);
 
-        SHMDestroy(gameInfo -> shmidOpponents);
-        SHMDetach(gameInfo);
-
-        exit(EXIT_SUCCESS);
+        /* do Connector stuff */
 
     } else { /* Thinker process (parent) */
-
-        /* TODO find a more elegant way to do this (semaphore? signal?) */
-        /* attach oppInfo when Connector is finished storing the opponent data */
-        while(gameInfo -> shmOppAttachable == false) { }
-
-        /* attach opponent info to Thinker process */
-        oppInfo = (struct player*) SHMAttach(gameInfo -> shmidOpponents);
+        atexit(cleanupThinker);
 
         /* waiting for Connector to finish execution */
-        if((waitpid(pid, &wstatus, 0)) < 0) {
+        while(waitpid(pid, &wstatus, WNOHANG) == 0) {
 
-            perror("Failed to wait for Connector process.");
-            exit(EXIT_FAILURE);
+            if(!thinkerAttachedOppInfo) { continue; }
 
-        } else {
-
-            /* debugging */
-            printWaitDetails(wstatus);
-
-            SHMDetach(oppInfo);
-            SHMDetach(gameInfo);
-            SHMDestroy(shmidGameInfo);
-
-            /* finish execution since Connector terminated */
-            exit(EXIT_SUCCESS);
+            /* do Thinker stuff */
         }
+        
+        /* debugging */
+        printWaitDetails(wstatus);
+
+        /* finish execution since Connector terminated */
+        exit(EXIT_SUCCESS);
     }
 }

@@ -8,7 +8,6 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
     char concatStr[BUFFER_SIZE] = { 0 };
     bool endOfPrologReached = false;
     char desPlayerNumberAsStr[12];
-    struct player *oppInfo;
 
     while(!endOfPrologReached) {
 
@@ -127,6 +126,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
 
             /* attach opponent info to Connector process */
             oppInfo = (struct player*) SHMAttach(gameDataPointer -> shmidOpponents);
+            connectorAttachedOppInfo = true;
 
             /* store the opponent data */
             for(int i = 0; i < gameDataPointer -> nPlayers-1; i++) {
@@ -154,7 +154,8 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
                 }
             }
 
-            gameDataPointer -> shmOppAttachable = true;
+            /* send a signal to the Thinker that the opponent info is now attachable */
+            kill(gameInfo -> thinkerPID, SIGUSR1);
                 
         } else if(startsWith(buffer, "+ ENDPLAYERS")) {
 
@@ -167,8 +168,6 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
             return -1;
         }
     }
-
-    SHMDetach(oppInfo);
 
     printf("Prologue phase successful. Starting the game now.\n");
 
