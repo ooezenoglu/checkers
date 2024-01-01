@@ -28,8 +28,7 @@ int main(int argc, char *argv[]) {
 
     if((pid = fork()) < 0) {
         
-        perror("Failed to fork.");
-        exit(EXIT_FAILURE);
+        errNdie("Failed to fork.");
 
     } else if(pid == 0) { /* Connector process (child) */
         atexit(cleanupConnector);
@@ -48,29 +47,17 @@ int main(int argc, char *argv[]) {
         memcpy(gameInfo -> clientVersion, CLIENT_VERSION, strlen(CLIENT_VERSION) + 1);
 
         /* read game ID and requested player number from the console */
-        if(parseCommandLineArgs(argc, argv, gameInfo) < 0) {
-            perror("Failed to parse command line arguments.");
-            exit(EXIT_FAILURE);
-        }
+        parseCommandLineArgs(argc, argv, gameInfo);
 
         /* parse and store game configuration from file */
-        if(readConfigFile(gameInfo) < 0) {
-            perror("Failed to read configuration file.");
-            exit(EXIT_FAILURE);
-        }
+        readConfigFile(gameInfo);
 
         /* connect to game server via TCP/IP socket */
-        if((sockfd = connectToServer(gameInfo -> hostName, gameInfo -> port)) < 0) {
-            perror("Failed to establish connection with Game Server.");
-            exit(EXIT_FAILURE);
-        }
+        sockfd = connectToServer(gameInfo -> hostName, gameInfo -> port);
 
         /* perform prologue phase */
-        if (performConnection(sockfd, gameInfo) < 0) {
-            perror("Prologue phase failed...");
-            exit(EXIT_FAILURE);
-        }
-        
+        performConnection(sockfd, gameInfo);
+
         /* workaround so that the Connector destroys the opponent 
         segment only if the Thinker attached it first */
         sleep(3);

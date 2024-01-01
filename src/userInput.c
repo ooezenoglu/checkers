@@ -2,7 +2,7 @@
 
 #define DEFAULT_CONFIG "client.conf"
 
-int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameInfoPtr) {
+void parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameInfoPtr) {
 
     int opt;
     int gflag = 0;
@@ -10,8 +10,7 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameInfoPtr) {
     int cflag = 0;
 
     if (argc < 3) {
-        perror("Incorrect format. Please enter the data in the format -g <GAME-ID> -p <{1,2}> -c <CONFIG-FILE>.");
-        return -1;
+        errNdie("Incorrect format. Please enter the data in the format -g <GAME-ID> -p <{1,2}> -c <CONFIG-FILE>.");
     }
 
     while ((opt = getopt(argc, argv, ":g:p::c::")) != -1) {
@@ -20,8 +19,7 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameInfoPtr) {
             case 'g':
 
                 if (optarg == NULL || strlen(optarg) != 13) {
-                    perror("Game ID must be exactly 13 characters long.");
-                    return -1;
+                    errNdie("Game ID must be exactly 13 characters long.");
                 }
 
                 memcpy(gameInfoPtr -> gameID, optarg, strlen(optarg) + 1);
@@ -39,8 +37,7 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameInfoPtr) {
                     gameInfoPtr -> requestedPlayerNumber = atoi(argv[optind]);
 
                     if (gameInfoPtr -> requestedPlayerNumber != 1 && gameInfoPtr -> requestedPlayerNumber != 2) {
-                        perror("If set, the player number must be 1 (opponent is the computer) or 2 (opponent is human).");
-                        return -1;
+                        errNdie("If set, the player number must be 1 (opponent is the computer) or 2 (opponent is human).");
                     }
 
                     /* player number is set correctly */
@@ -61,22 +58,18 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameInfoPtr) {
                 break;
 
             case ':':  
-                perror("Option -g needs a value.");  
-                return -1;
+                errNdie("Option -g needs a value.");  
 
             case '?':  
-                perror("Unknown option(s)."); 
-                return -1;
+                errNdie("Unknown option(s)."); 
 
             default:
-                perror("Incorrect format. Please enter the data in the format -g <GAME-ID> -p <{1,2}>.");
-                return -1;
+                errNdie("Incorrect format. Please enter the data in the format -g <GAME-ID> -p <{1,2}>.");
         }
     }
 
     if(gflag == 0) {
-        perror("Game ID unknown.");
-        return -1;
+        errNdie("Game ID unknown.");
     }
 
     /* default value if -p is not set */
@@ -93,11 +86,9 @@ int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameInfoPtr) {
     printf("Game ID: %s\n", gameInfoPtr -> gameID);
     printf("Player number: %i\n", gameInfoPtr -> requestedPlayerNumber);
     printf("Config file: %s\n", gameInfoPtr -> configFile);
-
-    return 0;
 }
 
-int readConfigFile(struct gameInfo *gameInfoPtr) {
+void readConfigFile(struct gameInfo *gameInfoPtr) {
     
     FILE *fp;
     char line[256] = { 0 };
@@ -105,8 +96,7 @@ int readConfigFile(struct gameInfo *gameInfoPtr) {
 
     /* open the config file in read mode */
     if ((fp = fopen(gameInfoPtr -> configFile, "r")) == NULL) {
-        perror("Error opening configuration file.");
-        return -1;
+        errNdie("Error opening configuration file.");
     }
     
     while(fgets(line, sizeof(line), fp) != NULL) {
@@ -124,13 +114,11 @@ int readConfigFile(struct gameInfo *gameInfoPtr) {
 
         if(key == NULL) {
 
-            perror("Missing parameter name.");
-            return -1;
+            errNdie("Missing parameter name.");
 
         } else if(value == NULL) {
 
-            perror("Missing parameter value.");
-            return -1;
+            errNdie("Missing parameter value.");
 
         } else {
 
@@ -143,8 +131,7 @@ int readConfigFile(struct gameInfo *gameInfoPtr) {
 
                 /* Extract port number */
                 if(sscanf(value, "%"SCNu16, &(gameInfoPtr -> port)) != 1) { 
-                    perror("Could not store port number.");
-                    return -1;
+                    errNdie("Could not store port number.");
                 }
 
             } else if (stringEquals(key, "GameKindName")) {
@@ -154,8 +141,7 @@ int readConfigFile(struct gameInfo *gameInfoPtr) {
 
             } else {
 
-                perror("Unknown parameter.");
-                return -1;
+                errNdie("Unknown parameter.");
             }
         }
 
@@ -168,6 +154,4 @@ int readConfigFile(struct gameInfo *gameInfoPtr) {
     printf("Hostname: %s\n", gameInfoPtr -> hostName);
     printf("Port: %d\n", gameInfoPtr -> port);
     printf("Gamekind name: %s\n", gameInfoPtr -> gameKindName);
-
-    return 0;
 }

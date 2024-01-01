@@ -24,34 +24,29 @@ void stringConcat(const char *leftString, const char *rightString, char *dest) {
     if(leftString == NULL && rightString != NULL) {
         /* copy the right string + /0 to the destination */
         if(memcpy(dest, rightString, strlen(rightString) + 1) == NULL) {
-            perror("Failed to copy string.");
-            exit(EXIT_FAILURE);
+            errNdie("Failed to copy string.");
         }
     }
 
     if(leftString != NULL && rightString == NULL) { 
         /* copy the left string + /0 to the destination */
         if(memcpy(dest, leftString, strlen(leftString) + 1) == NULL) {
-            perror("Failed to copy string.");
-            exit(EXIT_FAILURE);
+            errNdie("Failed to copy string.");
         };
     }
 
     if(leftString == NULL && rightString == NULL) {
-        perror("Both string arguments are NULL.");
-        exit(EXIT_FAILURE);
+        errNdie("Both string arguments are NULL.");
     }
 
     /* copy the left string to the destination */
     if(memcpy(dest, leftString, strlen(leftString)) == NULL) {
-        perror("Failed to copy string.");
-        exit(EXIT_FAILURE);
+        errNdie("Failed to copy string.");
     }
 
     /* concatenate the right string and its null terminator to the destination */
     if(strncat(dest, rightString, strlen(rightString) + 1) == NULL) {
-        perror("Failed to concatenate strings.");
-        exit(EXIT_FAILURE);
+        errNdie("Failed to concatenate strings.");
     }
 }
 

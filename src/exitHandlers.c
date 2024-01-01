@@ -1,5 +1,11 @@
 #include "exitHandlers.h"
 
+void errNdie(char *msg) {
+
+    perror(msg);
+    exit(EXIT_FAILURE);
+}
+
 void cleanup() {
 
     if(sockfd != -1) {

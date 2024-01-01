@@ -5,8 +5,7 @@ int SHMAlloc(size_t size) {
     int id;
 
     if((id = shmget(IPC_PRIVATE, size, IPC_CREAT | 0644)) == -1) {
-        perror("Failed to create shared memory segment.");
-        exit(EXIT_FAILURE);
+        errNdie("Failed to create shared memory segment.");
     }
 
     return id;
@@ -17,8 +16,7 @@ void *SHMAttach(int shmid) {
     void *shmaddr = shmat(shmid, 0, 0);
     
     if(shmaddr == (void*) -1) {
-        perror("Failed to attach shared memory segment.");
-        exit(EXIT_FAILURE);
+        errNdie("Failed to attach shared memory segment.");
     }
 
     return shmaddr;
@@ -35,15 +33,13 @@ void attachOppInfo() {
 void SHMDetach(const void *shmaddr) {
 
     if(shmdt(shmaddr) != 0) {
-        perror("Failed to detach shared memory segment.");
-        exit(EXIT_FAILURE);
+        errNdie("Failed to detach shared memory segment.");
     }
 }
 
 void SHMDestroy(int shmid) {
 
     if(shmctl(shmid, IPC_RMID, NULL) != 0) {
-        perror("Failed to mark shared memory segment for destruction.");
-        exit(EXIT_FAILURE);
+        errNdie("Failed to mark shared memory segment for destruction.");
     }
 }

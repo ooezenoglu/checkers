@@ -4,6 +4,7 @@
 #include "helpers.h"
 #include "sharedMemory.h"
 
+void errNdie(char *msg);
 void cleanup();
 void cleanupThinker();
 void cleanupConnector();

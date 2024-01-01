@@ -4,7 +4,7 @@
 #include "helpers.h"
 #include "stringUtils.h"
 
-int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameInfoPtr);
-int readConfigFile(struct gameInfo *gameInfoPtr);
+void parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameInfoPtr);
+void readConfigFile(struct gameInfo *gameInfoPtr);
 
 #endif

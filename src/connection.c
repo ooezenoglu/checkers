@@ -15,8 +15,7 @@ int connectToServer(const char *host, const int port) {
     
     /* determine server IP address */
     if(getaddrinfo(host, NULL, &hints, &addrInfoList) != 0) {
-        perror("Failed to get host address information.");
-        return -1;
+        errNdie("Failed to get host address information.");
     }
 
     /* store server info */
@@ -28,8 +27,7 @@ int connectToServer(const char *host, const int port) {
 
     /* create TCP/IP socket */
     if((sockfd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
-        perror("Failed to create socket.");
-        return -1;
+        errNdie("Failed to create socket.");
     }
 
      /* connect to server */
@@ -39,10 +37,7 @@ int connectToServer(const char *host, const int port) {
         return sockfd;
     }
      
-    perror("Failed to establish connection with the server. Closing socket...\n");
-    close(sockfd);
-    
-    return -1;
+    errNdie("Failed to establish connection with the server. Closing socket...\n");    
 }
 
 void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize) {

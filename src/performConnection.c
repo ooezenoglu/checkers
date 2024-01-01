@@ -2,7 +2,7 @@
 
 #define BUFFER_SIZE 255
 
-int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
+void performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
 
     char buffer[BUFFER_SIZE] = { 0 };
     char concatStr[BUFFER_SIZE] = { 0 };
@@ -20,15 +20,13 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
             /* remove newline at the end of the string bc perror adds more stuff to it */
             concatStr[strlen(concatStr)-1] = '\0';
 
-            perror(concatStr);
-            return -1;
+            errNdie(concatStr);
 
         } else if(startsWith(buffer, "+ MNM Gameserver")) {
 
             /* store & print gameserver version */
             if(sscanf(buffer, "%*s%*s%*s%s", gameDataPointer -> serverVersion) != 1) { 
-                perror("Could not store game data.");
-                return -1;
+                errNdie("Could not store game data.");
             } else {
                 printf("Connecting with the MNM Gameserver %s...\n", gameDataPointer -> serverVersion);
             }
@@ -63,11 +61,9 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
 
             /* store, check & print gamekind */
             if(sscanf(buffer, "%*s%*s%s", gameDataPointer -> gameKindName) != 1) {
-                perror("Could not store game data.");
-                return -1;
+                errNdie("Could not store game data.");
             } else if(!startsWith(gameDataPointer -> gameKindName, "Checkers")) {
-                perror("Gamekind must be \"Checkers\".");
-                return -1;
+                errNdie("Gamekind must be \"Checkers\".");
             } else {
                 printf("Playing \"%s\".\n", gameDataPointer -> gameKindName);
             }
@@ -79,8 +75,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
 
             /* store & print game name */
             if(sscanf(buffer, "%*s %[^\n]", gameDataPointer -> gameName) != 1) {
-                perror("Could not store game data.");
-                return -1;
+                errNdie("Could not store game data.");
             } else {
                 printf("Joining game \"%s\".\n", gameDataPointer -> gameName);
             }
@@ -105,8 +100,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
 
             /* store & print player number and player name */
             if(sscanf(buffer, "%*s %*s %i %[^\n]", &(gameDataPointer -> thisPlayerNumber), gameDataPointer -> thisPlayerName) != 2) {
-                perror("Could not store game data.");
-                return -1;
+                errNdie("Could not store game data.");
             } else {
                 printf("You are Player %i (%s).\n", gameDataPointer -> thisPlayerNumber, gameDataPointer -> thisPlayerName);
             }
@@ -115,8 +109,7 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
 
             /* store & print total player count */
             if(sscanf(buffer, "%*s %*s %i", &(gameDataPointer -> nPlayers)) != 1) {
-                perror("Could not store game data.");
-                return -1;
+                errNdie("Could not store game data.");
             } else {
                 printf("%i players are playing.\n", gameDataPointer -> nPlayers);
             }
@@ -164,12 +157,9 @@ int performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
         } else {
 
             /* for unexpected things */
-            perror("Something went wrong while setting up the game.");
-            return -1;
+            errNdie("Something went wrong while setting up the game.");
         }
     }
 
     printf("Prologue phase successful. Starting the game now.\n");
-
-    return 0;
 }
