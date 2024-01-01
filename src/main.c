@@ -1,4 +1,7 @@
 #include "helpers.h"
+#include "userInput.h"
+#include "connection.h"
+#include "sharedMemory.h"
 
 #define CLIENT_VERSION "3.1"
 

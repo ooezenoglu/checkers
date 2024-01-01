@@ -1,16 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include "helpers.h"
+#include "connection.h"
 
 int connectToServer(const char *host, const int port) {
 
@@ -55,4 +43,47 @@ int connectToServer(const char *host, const int port) {
     close(sockfd);
     
     return -1;
+}
+
+void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize) {
+
+    /* clear buffer before use */
+    memset(buffer, 0, strlen(buffer));
+
+    /* read-in data until the first newline character is reached */
+    for(int i = 0; i < bufferSize; i++) {
+
+        if(recv(sockfd, &buffer[i], 1, 0) != 1) {
+            perror("Failed to receive line from server.");
+            exit(EXIT_FAILURE);
+        }
+
+        if (buffer[i] == '\n') {
+            buffer[i+1] = '\0';
+            break;
+        }
+    }
+
+    /* debugging */
+    // printf("S: %s\n", buffer);
+}
+
+void sendLineToServer(const int sockfd, char *buffer, const char *line) {
+
+    /* clear buffer before use */
+    memset(buffer, 0, strlen(buffer));
+
+    /* write into the buffer and finish with newline character */
+    if(sprintf(&buffer[0], "%s\n", line) < 0) {
+        perror("Failed to write line to buffer.");
+        exit(EXIT_FAILURE);
+    }
+
+    if(send(sockfd, buffer, strlen(buffer), 0) == -1) {
+        perror("Failed to send line to server.");
+        exit(EXIT_FAILURE);
+    }
+
+    /* debugging */
+    // printf("C: %s\n", buffer);
 }

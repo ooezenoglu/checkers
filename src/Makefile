@@ -8,7 +8,7 @@ CFLAGS = -g -Wall -Werror
 # required libraries
 LIBS =
 
-SRCFILES = performConnection.c connectToServer.c helpers.c main.c
+SRCFILES = exitHandlers.c sharedMemory.c performConnection.c connection.c userInput.c stringUtils.c main.c
 
 # required object files
 OBJFILES = $(SRCFILES:.c=.o)

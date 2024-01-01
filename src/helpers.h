@@ -16,6 +16,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <signal.h>
+#include "exitHandlers.h"
 
 struct gameInfo {
     char gameID[15];
@@ -41,26 +42,7 @@ struct player {
     int isReady;
 };
 
-void cleanup();
-void cleanupThinker();
-void cleanupConnector();
-void attachOppInfo();
-int parseCommandLineArgs(int argc, char *argv[], struct gameInfo *gameInfoPtr);
-int readConfigFile(struct gameInfo *gameInfoPtr);
-int connectToServer(const char *host, const int port);
-int performConnection(const int sockfd, struct gameInfo *gameInfoPtr);
-void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize);
-void sendLineToServer(const int sockfd, char *buffer, const char *line);
-bool startsWith(const char *s1, const char *s2);
-bool stringEquals(const char *s1, const char *s2);
-void stringConcat(const char *leftString, const char *rightString, char *dest);
-void stringTokenizer(char *src, char *delim, char **res, int *len);
-void printWaitDetails(int wstatus);
-int SHMAlloc(size_t size);
-void *SHMAttach(int shmid);
-void SHMDetach(const void *shmaddr);
-void SHMDestroy(int shmid);
-
+/* global variables */
 extern int shmidGameInfo;
 extern int sockfd;
 extern struct gameInfo *gameInfo;
