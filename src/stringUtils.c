@@ -50,7 +50,12 @@ void stringConcat(const char *leftString, const char *rightString, char *dest) {
     }
 }
 
-void stringTokenizer(char *src, char *delim, char **res, int *len) {
+void stringTokenizer(char *src, char *delim, char **res, int *len, int maxTokens) {
+
+    /* initialize result */
+    for (int i = 0; i < maxTokens; i++) {
+        res[i] = NULL;
+    }
 
     char *token;
     int i = 0;
@@ -66,7 +71,7 @@ void stringTokenizer(char *src, char *delim, char **res, int *len) {
     *len = i;
 
     /* debugging */
-    for(int j = 0; j < *len; j++) {
-        printf("TOKEN: %s\n", res[j]);
-    }
+    // for(int j = 0; j < *len; j++) {
+    //     printf("TOKEN: %s\n", res[j]);
+    // }
 }

@@ -27,7 +27,30 @@ void attachOppInfo() {
     /* attach opponent info to Thinker process */
     printf("Thinker: Attaching Opponent Info SHM segment...\n");
     oppInfo = (struct player*) SHMAttach(gameInfo -> shmidOpponents);
-    thinkerAttachedOppInfo = true;
+    SHMInfo.thinkerAttachedOppInfo = true;
+}
+
+void storeBoardInSHM() {
+
+    /* create and attach a SHM segment that stores as many pointers to strings as there are rows */
+    gameInfo -> shmidBoard = SHMAlloc(gameState.rows * sizeof(char**));
+    gameState.board = (char**) SHMAttach(gameInfo -> shmidBoard);
+    SHMInfo.connectorAttachedBoard = true;
+
+    /* create and attach a SHM segment that stores as many shmids as there are rows */
+    gameInfo -> shmidBoardRows = SHMAlloc(gameState.rows * sizeof(int));
+    gameState.shmidBoardRowsPtr = (int*) SHMAttach(gameInfo -> shmidBoardRows);
+    SHMInfo.connectorAttachedBoardRowIDs = true;
+
+    /* for each row, create and attach a SHM segment that stores as many chars as there are columns;
+    store the shmids in the separate SHM segment */
+    for (int i = 0; i < gameState.rows; i++) {
+        gameState.shmidBoardRowsPtr[i] = SHMAlloc(gameState.cols * sizeof (char));
+        gameState.board[i] = (char *) SHMAttach(gameState.shmidBoardRowsPtr[i]);
+    }
+
+    SHMInfo.connectorAttachedBoardRows = true;
+    gameInfo -> boardExistsInSHM = true;
 }
 
 void SHMDetach(const void *shmaddr) {

@@ -119,7 +119,7 @@ void performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
 
             /* attach opponent info to Connector process */
             oppInfo = (struct player*) SHMAttach(gameDataPointer -> shmidOpponents);
-            connectorAttachedOppInfo = true;
+            SHMInfo.connectorAttachedOppInfo = true;
 
             /* store the opponent data */
             for(int i = 0; i < gameDataPointer -> nPlayers-1; i++) {

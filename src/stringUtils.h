@@ -6,6 +6,6 @@
 bool startsWith(const char *s1, const char *s2);
 bool stringEquals(const char *s1, const char *s2);
 void stringConcat(const char *leftString, const char *rightString, char *dest);
-void stringTokenizer(char *src, char *delim, char **res, int *len);
+void stringTokenizer(char *src, char *delim, char **res, int *len, int maxTokens);
 
 #endif

@@ -32,14 +32,37 @@ struct gameInfo {
     char gameName[40];
     int thisPlayerNumber;
     char thisPlayerName[20];
+    char clientHasWon[10];
     int nPlayers;
     int shmidOpponents;
+    int shmidBoard;
+    int shmidBoardRows;
+    bool boardExistsInSHM;
 };
 
 struct player {
     int playerNumber;
     char playerName[20];
     int isReady;
+    char hasWon[10];
+};
+
+struct gameState {
+    int rows;
+    int cols;
+    int timeout;
+    char **board;
+    int *shmidBoardRowsPtr;
+};
+
+struct SHMInfo {
+    bool thinkerAttachedGameInfo;
+    bool thinkerAttachedOppInfo;
+    bool connectorAttachedGameInfo;
+    bool connectorAttachedOppInfo;
+    bool connectorAttachedBoard;
+    bool connectorAttachedBoardRowIDs;
+    bool connectorAttachedBoardRows;
 };
 
 /* global variables */
@@ -47,9 +70,7 @@ extern int shmidGameInfo;
 extern int sockfd;
 extern struct gameInfo *gameInfo;
 extern struct player *oppInfo;
-extern bool thinkerAttachedGameInfo;
-extern bool thinkerAttachedOppInfo;
-extern bool connectorAttachedGameInfo;
-extern bool connectorAttachedOppInfo;
+extern struct gameState gameState;
+extern struct SHMInfo SHMInfo;
 
 #endif

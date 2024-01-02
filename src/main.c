@@ -2,6 +2,7 @@
 #include "userInput.h"
 #include "connection.h"
 #include "sharedMemory.h"
+#include "gameplay.h"
 
 #define CLIENT_VERSION "3.1"
 
@@ -10,10 +11,8 @@ int shmidGameInfo, wstatus;
 int sockfd = -1;
 struct gameInfo *gameInfo;
 struct player *oppInfo;
-bool thinkerAttachedGameInfo = false;
-bool thinkerAttachedOppInfo = false;
-bool connectorAttachedGameInfo = false;
-bool connectorAttachedOppInfo = false;
+struct gameState gameState;
+struct SHMInfo SHMInfo = { false };
 
 int main(int argc, char *argv[]) {
     atexit(cleanup);
@@ -24,7 +23,8 @@ int main(int argc, char *argv[]) {
 
     /* attach game info to Thinker process */
     gameInfo = (struct gameInfo*) SHMAttach(shmidGameInfo);
-    thinkerAttachedGameInfo = true;
+    SHMInfo.thinkerAttachedGameInfo = true;
+    gameInfo -> boardExistsInSHM = false;
 
     if((pid = fork()) < 0) {
         
@@ -35,12 +35,10 @@ int main(int argc, char *argv[]) {
 
         /* attach game info to Connector process */
         gameInfo = (struct gameInfo*) SHMAttach(shmidGameInfo);
-        connectorAttachedGameInfo = true;
+        SHMInfo.connectorAttachedGameInfo = true;
 
-        /* store PID of Connector process */
+        /* store PID of Connector & Thinker process */
         gameInfo -> connectorPID = getpid();
-
-        /* store PID of Thinker process */
         gameInfo -> thinkerPID = getppid();
 
         /* store the client version in the game data struct */
@@ -58,11 +56,8 @@ int main(int argc, char *argv[]) {
         /* perform prologue phase */
         performConnection(sockfd, gameInfo);
 
-        /* workaround so that the Connector destroys the opponent 
-        segment only if the Thinker attached it first */
-        sleep(3);
-
-        /* do Connector stuff */
+        /* perform game play phase */
+        performGameplay(sockfd, gameInfo);
 
     } else { /* Thinker process (parent) */
         atexit(cleanupThinker);
@@ -70,7 +65,7 @@ int main(int argc, char *argv[]) {
         /* waiting for Connector to finish execution */
         while(waitpid(pid, &wstatus, WNOHANG) == 0) {
 
-            if(!thinkerAttachedOppInfo) { continue; }
+            if(!SHMInfo.thinkerAttachedOppInfo) { continue; }
 
             /* do Thinker stuff */
         }

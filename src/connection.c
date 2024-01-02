@@ -49,8 +49,7 @@ void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize)
     for(int i = 0; i < bufferSize; i++) {
 
         if(recv(sockfd, &buffer[i], 1, 0) != 1) {
-            perror("Failed to receive line from server.");
-            exit(EXIT_FAILURE);
+            errNdie("Failed to receive line from server.");
         }
 
         if (buffer[i] == '\n') {
@@ -60,7 +59,7 @@ void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize)
     }
 
     /* debugging */
-    // printf("S: %s\n", buffer);
+    printf("S: %s\n", buffer);
 }
 
 void sendLineToServer(const int sockfd, char *buffer, const char *line) {
@@ -70,15 +69,13 @@ void sendLineToServer(const int sockfd, char *buffer, const char *line) {
 
     /* write into the buffer and finish with newline character */
     if(sprintf(&buffer[0], "%s\n", line) < 0) {
-        perror("Failed to write line to buffer.");
-        exit(EXIT_FAILURE);
+        errNdie("Failed to write line to buffer.");
     }
 
     if(send(sockfd, buffer, strlen(buffer), 0) == -1) {
-        perror("Failed to send line to server.");
-        exit(EXIT_FAILURE);
+        errNdie("Failed to send line to server.");
     }
 
     /* debugging */
-    // printf("C: %s\n", buffer);
+    printf("C: %s\n", buffer);
 }
