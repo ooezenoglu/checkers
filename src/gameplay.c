@@ -28,6 +28,56 @@ void receiveBoard(const int sockfd) {
     }
 }
 
+void printBoard() {
+
+    char *w = "\u26C0";
+    char *W = "\u26C1";
+    char *b = "\u26C2";
+    char *B = "\u26C3";
+
+    bool f = true;
+
+    printf("   A B C D E F G H\n");
+    printf(" +-----------------+\n");
+
+    for (int i = 0; i < gameState -> rows; i++) {
+        printf("%i| ", i + 1);
+        for (int j = 0; j < gameState -> cols; j++) {
+
+            switch (gameState -> board[i][j]) {
+
+                case 'w':
+                    printf("%s ", w);
+                    break;   
+                case 'W':
+                    printf("%s ", w);
+                    break;
+                case 'b':
+                    printf("%s ", b);
+                    break;
+                case 'B':
+                    printf("%s ", B);
+                    break;
+                case '*':
+                    if(f) {
+                        printf(". ");
+                    } else {
+                        printf("_ ");
+                    }
+                    break;
+                default:
+                    errNdie("Unknown symbol.");
+            }
+            f = !f;
+        }
+        printf("|%i", i + 1);
+        printf("\n");
+        f = !f;
+    }
+    printf(" +-----------------+\n");
+    printf("   A B C D E F G H\n");
+}
+
 void gameOverStatement(const int sockfd, struct gameInfo *gameDataPointer, char *buffer) {
     
     while(1) {
@@ -132,13 +182,7 @@ void think() {
         char *move = "A3:B4";
         char *play = "PLAY ";
 
-        /* read and print the game state */
-        for (int i = 0; i < gameState -> rows; i++) {
-            for (int j = 0; j < gameState -> cols; j++) {
-                printf("%c ", gameState -> board[i][j]);
-            }
-            printf("\n");
-        }
+        printBoard();
 
         /* TODO calculate the next move here (hardcoded for now) */
         stringConcat(play, move, concatStr);

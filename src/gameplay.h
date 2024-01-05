@@ -21,6 +21,7 @@
 #define MOVEOK "+ MOVEOK"
 
 void receiveBoard(const int sockfd);
+void printBoard();
 void gameOverStatement(const int sockfd, struct gameInfo *gameDataPointer, char *buffer);
 int moveStatement(const int sockfd, struct gameInfo *gameDataPointer, char *buffer);
 void think();
