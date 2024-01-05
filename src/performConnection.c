@@ -148,7 +148,7 @@ void performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
             }
 
             /* send a signal to the Thinker that the opponent info is now attachable */
-            kill(gameInfo -> thinkerPID, SIGUSR1);
+            kill(gameInfo -> thinkerPID, SIGUSR2);
                 
         } else if(startsWith(buffer, "+ ENDPLAYERS")) {
 

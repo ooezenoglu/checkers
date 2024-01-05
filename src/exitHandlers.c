@@ -21,6 +21,11 @@ void cleanupThinker() {
         SHMDetach(oppInfo);
     }
 
+    if(SHMInfo.thinkerAttachedGameState) {
+        printf("Thinker: Detaching Game State SHM segment...\n");
+        SHMDetach(gameState);
+    }
+
     if(SHMInfo.thinkerAttachedGameInfo) {
         printf("Thinker: Detaching Game Info SHM segment...\n");
         SHMDetach(gameInfo);
@@ -36,25 +41,10 @@ void cleanupConnector() {
         SHMDestroy(gameInfo -> shmidOpponents);
     }
 
-    if(SHMInfo.connectorAttachedBoardRows) {
-        
-        for(int i = 0; i < gameState.rows; i++) {
-            printf("Connector: Detaching Board[%i] SHM segment...\n", i);
-            SHMDetach(gameState.board[i]);
-            SHMDestroy(gameState.shmidBoardRowsPtr[i]);
-        }   
-    }
-    
-    if(SHMInfo.connectorAttachedBoardRowIDs) {
-        printf("Connector: Detaching Board Rows SHM segment (IDs)...\n");
-        SHMDetach(gameState.shmidBoardRowsPtr);
-        SHMDestroy(gameInfo -> shmidBoardRows);
-    }
-
-    if(SHMInfo.connectorAttachedBoard) {
-        printf("Connector: Detaching Board SHM segment...\n");
-        SHMDetach(gameState.board);
-        SHMDestroy(gameInfo -> shmidBoard);
+    if(SHMInfo.connectorAttachedGameState) {
+        printf("Connector: Detaching Game State SHM segment...\n");
+        SHMDetach(gameState);
+        SHMDestroy(gameInfo -> shmidGameState);
     }
 
     if(SHMInfo.connectorAttachedGameInfo) {

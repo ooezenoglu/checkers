@@ -18,6 +18,9 @@
 #include <signal.h>
 #include "exitHandlers.h"
 
+#define BOARDROWS 8
+#define BOARDCOLS 8
+
 struct gameInfo {
     char gameID[15];
     int requestedPlayerNumber;
@@ -35,9 +38,7 @@ struct gameInfo {
     char clientHasWon[10];
     int nPlayers;
     int shmidOpponents;
-    int shmidBoard;
-    int shmidBoardRows;
-    bool boardExistsInSHM;
+    int shmidGameState;
 };
 
 struct player {
@@ -48,21 +49,21 @@ struct player {
 };
 
 struct gameState {
+    int timeout;
     int rows;
     int cols;
-    int timeout;
-    char **board;
-    int *shmidBoardRowsPtr;
+    bool think;
+    char move[20];
+    char board[BOARDROWS][BOARDCOLS];
 };
 
 struct SHMInfo {
     bool thinkerAttachedGameInfo;
     bool thinkerAttachedOppInfo;
+    bool thinkerAttachedGameState;
     bool connectorAttachedGameInfo;
     bool connectorAttachedOppInfo;
-    bool connectorAttachedBoard;
-    bool connectorAttachedBoardRowIDs;
-    bool connectorAttachedBoardRows;
+    bool connectorAttachedGameState;
 };
 
 /* global variables */
@@ -70,7 +71,7 @@ extern int shmidGameInfo;
 extern int sockfd;
 extern struct gameInfo *gameInfo;
 extern struct player *oppInfo;
-extern struct gameState gameState;
+extern struct gameState *gameState;
 extern struct SHMInfo SHMInfo;
 
 #endif

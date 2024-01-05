@@ -6,7 +6,7 @@
 int SHMAlloc(size_t size);
 void *SHMAttach(int shmid);
 void attachOppInfo();
-void storeBoardInSHM();
+void attachGameState();
 void SHMDetach(const void *shmaddr);
 void SHMDestroy(int shmid);
 

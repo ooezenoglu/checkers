@@ -22,9 +22,10 @@
 
 void receiveBoard(const int sockfd);
 void gameOverStatement(const int sockfd, struct gameInfo *gameDataPointer, char *buffer);
+int moveStatement(const int sockfd, struct gameInfo *gameDataPointer, char *buffer);
+void think();
+void waitMOVEOK();
 void waitStatement(const int sockfd, char *buffer);
-void moveStatement(const int sockfd, struct gameInfo *gameInfoPtr, char *buffer);
-void think(const int sockfd, char *buffer);
 void performGameplay(const int sockfd, struct gameInfo *gameDataPointer);
 
 #endif

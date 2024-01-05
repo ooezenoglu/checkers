@@ -59,7 +59,7 @@ void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize)
     }
 
     /* debugging */
-    printf("S: %s\n", buffer);
+    // printf("S: %s\n", buffer);
 }
 
 void sendLineToServer(const int sockfd, char *buffer, const char *line) {
@@ -77,5 +77,5 @@ void sendLineToServer(const int sockfd, char *buffer, const char *line) {
     }
 
     /* debugging */
-    printf("C: %s\n", buffer);
+    // printf("C: %s\n", buffer);
 }

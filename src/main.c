@@ -11,12 +11,13 @@ int shmidGameInfo, wstatus;
 int sockfd = -1;
 struct gameInfo *gameInfo;
 struct player *oppInfo;
-struct gameState gameState;
+struct gameState *gameState;
 struct SHMInfo SHMInfo = { false };
 
 int main(int argc, char *argv[]) {
     atexit(cleanup);
-    signal(SIGUSR1, attachOppInfo);
+    signal(SIGUSR2, attachOppInfo);
+    signal(SIGUSR1, think);
 
     /* create a shared memory segmet to store the game data into */
     shmidGameInfo = SHMAlloc(sizeof(gameInfo));
@@ -24,7 +25,6 @@ int main(int argc, char *argv[]) {
     /* attach game info to Thinker process */
     gameInfo = (struct gameInfo*) SHMAttach(shmidGameInfo);
     SHMInfo.thinkerAttachedGameInfo = true;
-    gameInfo -> boardExistsInSHM = false;
 
     if((pid = fork()) < 0) {
         
