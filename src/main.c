@@ -9,6 +9,7 @@
 pid_t pid;
 int shmidGameInfo, wstatus;
 int sockfd = -1;
+int pipefd[2];
 struct gameInfo *gameInfo;
 struct player *oppInfo;
 struct gameState *gameState;
@@ -26,12 +27,18 @@ int main(int argc, char *argv[]) {
     gameInfo = (struct gameInfo*) SHMAttach(shmidGameInfo);
     SHMInfo.thinkerAttachedGameInfo = true;
 
+    /* set up an unnamed pipe for ipc */
+    if(pipe(pipefd) < 0) { errNdie("Failed to create pipe."); }
+
     if((pid = fork()) < 0) {
         
         errNdie("Failed to fork.");
 
     } else if(pid == 0) { /* Connector process (child) */
         atexit(cleanupConnector);
+
+        /* close write end of pipe */
+        if(close(pipefd[1]) != 0) { errNdie("Failed to close write end of pipe."); }
 
         /* attach game info to Connector process */
         gameInfo = (struct gameInfo*) SHMAttach(shmidGameInfo);
@@ -61,6 +68,9 @@ int main(int argc, char *argv[]) {
 
     } else { /* Thinker process (parent) */
         atexit(cleanupThinker);
+
+        /* close read end of pipe */
+        if(close(pipefd[0]) != 0) { errNdie("Failed to close read end of pipe."); }
 
         /* waiting for Connector to finish execution */
         while(waitpid(pid, &wstatus, WNOHANG) == 0) {

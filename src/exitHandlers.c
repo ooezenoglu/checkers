@@ -16,6 +16,8 @@ void cleanup() {
 
 void cleanupThinker() {
 
+    close(pipefd[1]);
+
     if(SHMInfo.thinkerAttachedOppInfo) {
         printf("Thinker: Detaching Opponent Info SHM segment...\n");
         SHMDetach(oppInfo);
@@ -35,6 +37,8 @@ void cleanupThinker() {
 
 void cleanupConnector() {
     
+    close(pipefd[0]);
+
     if(SHMInfo.connectorAttachedOppInfo) {
         printf("Connector: Detaching Opponent Info SHM segment...\n");
         SHMDetach(oppInfo);

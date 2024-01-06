@@ -69,6 +69,7 @@ struct SHMInfo {
 /* global variables */
 extern int shmidGameInfo;
 extern int sockfd;
+extern int pipefd[2];
 extern struct gameInfo *gameInfo;
 extern struct player *oppInfo;
 extern struct gameState *gameState;

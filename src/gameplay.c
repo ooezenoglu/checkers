@@ -122,6 +122,9 @@ void gameOverStatement(const int sockfd, struct gameInfo *gameDataPointer, char 
 
 int moveStatement(const int sockfd, struct gameInfo *gameDataPointer, char *buffer) {
 
+    int n = 5;
+    char concatStr[BUFFER_SIZE] = { 0 };
+
     /* store & print timeout */
     if(sscanf(buffer, "%*s %*s %i", &(gameState -> timeout)) != 1) {
         errNdie("Could not store game data.");
@@ -151,8 +154,15 @@ int moveStatement(const int sockfd, struct gameInfo *gameDataPointer, char *buff
             /* shortly wait for the update to arrive */
             sleep(1);
 
-            printf("Sending \"%s\"...\n", gameState -> move);
-            sendLineToServer(sockfd, buffer, gameState -> move);
+            /* read move from the pipe */
+            if((read(pipefd[0], gameState -> move, n)) != n) {
+                errNdie("Failed to read move from pipe.");
+            }
+
+            /* send the move to the server */
+            printf("Sending move %s...\n", gameState -> move);
+            stringConcat("PLAY ", gameState -> move, concatStr);
+            sendLineToServer(sockfd, buffer, concatStr);
 
             waitMOVEOK();
             break;
@@ -178,15 +188,17 @@ void think() {
 
     if(gameState -> think) {
 
-        char concatStr[BUFFER_SIZE] = { 0 };
         char *move = "A3:B4";
-        char *play = "PLAY ";
+        int n = sizeof(move);
 
         printBoard();
 
         /* TODO calculate the next move here (hardcoded for now) */
-        stringConcat(play, move, concatStr);
-        memcpy(gameState -> move, concatStr, strlen(concatStr) + 1);
+
+        /* write move to the pipe */
+        if((write(pipefd[1], move, n)) != n) {
+            errNdie("Failed to write move to pipe.");
+        }
 
         gameState -> think = false;
     }
