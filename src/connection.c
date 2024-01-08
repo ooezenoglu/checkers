@@ -1,8 +1,7 @@
 #include "connection.h"
 
-int connectToServer(const char *host, const int port) {
+void connectToServer() {
 
-    int sockfd;
     struct addrinfo hints, *addrInfoList;
     struct sockaddr_in servAddr;
     
@@ -14,13 +13,13 @@ int connectToServer(const char *host, const int port) {
     hints.ai_socktype = SOCK_STREAM;
     
     /* determine server IP address */
-    if(getaddrinfo(host, NULL, &hints, &addrInfoList) != 0) {
+    if(getaddrinfo(gameInfo -> hostName, NULL, &hints, &addrInfoList) != 0) {
         errNdie("Failed to get host address information.");
     }
 
     /* store server info */
     servAddr.sin_family = AF_INET;
-    servAddr.sin_port = htons(port);
+    servAddr.sin_port = htons(gameInfo -> port);
     servAddr.sin_addr = *(&((struct sockaddr_in *) addrInfoList -> ai_addr) -> sin_addr); /* grab the first IP address from the list */
 
     freeaddrinfo(addrInfoList);
@@ -30,23 +29,22 @@ int connectToServer(const char *host, const int port) {
         errNdie("Failed to create socket.");
     }
 
-     /* connect to server */
-    if(connect(sockfd, (struct sockaddr*) &servAddr, sizeof(servAddr)) == 0) {
-        /* debugging */
-        // printf("Successfully established connection with %s via %s\n", host, inet_ntoa(servAddr.sin_addr));
-        return sockfd;
+    /* connect to server */
+    if(connect(sockfd, (struct sockaddr*) &servAddr, sizeof(servAddr)) != 0) {
+        errNdie("Failed to establish connection with the server.\n");
     }
-     
-    errNdie("Failed to establish connection with the server. Closing socket...\n");    
+
+    /* debugging */
+    // printf("Successfully established connection with %s via %s\n", host, inet_ntoa(servAddr.sin_addr));
 }
 
-void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize) {
+void receiveLineFromServer(char *buffer) {
 
     /* clear buffer before use */
     memset(buffer, 0, strlen(buffer));
 
     /* read-in data until the first newline character is reached */
-    for(int i = 0; i < bufferSize; i++) {
+    for(int i = 0; i < BUFFER_SIZE; i++) {
 
         if(recv(sockfd, &buffer[i], 1, 0) != 1) {
             errNdie("Failed to receive line from server.");
@@ -62,10 +60,9 @@ void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize)
     // printf("S: %s\n", buffer);
 }
 
-void sendLineToServer(const int sockfd, char *buffer, const char *line) {
+void sendLineToServer(const char *line) {
 
-    /* clear buffer before use */
-    memset(buffer, 0, strlen(buffer));
+    char buffer[BUFFER_SIZE] = { 0 };
 
     /* write into the buffer and finish with newline character */
     if(sprintf(&buffer[0], "%s\n", line) < 0) {

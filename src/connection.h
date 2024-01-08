@@ -5,9 +5,19 @@
 #include "stringUtils.h"
 #include "sharedMemory.h"
 
-int connectToServer(const char *host, const int port);
-void performConnection(const int sockfd, struct gameInfo *gameDataPointer);
-void receiveLineFromServer(const int sockfd, char *buffer, const int bufferSize);
-void sendLineToServer(const int sockfd, char *buffer, const char *line);
+#define MNM_GAMESERVER "+ MNM Gameserver"
+#define VERSION "VERSION "
+#define CLIENT_ACCEPTED "+ Client version accepted"
+#define ID "ID "
+#define PLAYING "+ PLAYING"
+#define PLAYER "PLAYER"
+#define YOU "+ YOU"
+#define TOTAL "+ TOTAL"
+#define ENDPLAYERS "+ ENDPLAYERS"
+
+void connectToServer();
+void receiveLineFromServer(char *buffer);
+void sendLineToServer(const char *line);
+void performConnection();
 
 #endif

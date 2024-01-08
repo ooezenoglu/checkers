@@ -1,19 +1,16 @@
 #include "connection.h"
 
-#define BUFFER_SIZE 255
-
-void performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
+void performConnection() {
 
     char buffer[BUFFER_SIZE] = { 0 };
     char concatStr[BUFFER_SIZE] = { 0 };
-    bool endOfPrologReached = false;
     char desPlayerNumberAsStr[12];
 
-    while(!endOfPrologReached) {
+    while(1) {
 
-        receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
+        receiveLineFromServer(buffer);
 
-        if (buffer[0] == '-') {
+        if (startsWith(buffer, NACK)) {
             
             stringConcat("NACK received: ", buffer + 2, concatStr); /* + 2 to skip preceding "- " */
 
@@ -22,113 +19,113 @@ void performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
 
             errNdie(concatStr);
 
-        } else if(startsWith(buffer, "+ MNM Gameserver")) {
+        } else if(startsWith(buffer, MNM_GAMESERVER)) {
 
             /* store & print gameserver version */
-            if(sscanf(buffer, "%*s%*s%*s%s", gameDataPointer -> serverVersion) != 1) { 
+            if(sscanf(buffer, "%*s%*s%*s%s", gameInfo -> serverVersion) != 1) { 
                 errNdie("Could not store game data.");
             } else {
-                printf("Connecting with the MNM Gameserver %s...\n", gameDataPointer -> serverVersion);
+                printf("Connecting with the MNM Gameserver %s...\n", gameInfo -> serverVersion);
             }
 
             /* read & print message of the day */
-            receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
+            receiveLineFromServer(buffer);
             printf("The message of the day is: %s", buffer+2);
 
             /* generate & send client version response */
-            stringConcat("VERSION ", gameDataPointer -> clientVersion, concatStr);
+            stringConcat(VERSION, gameInfo -> clientVersion, concatStr);
 
             /* send client version (note that it must match the game server major version) */
-            sendLineToServer(sockfd, buffer, concatStr);
+            sendLineToServer(concatStr);
             
             /* clear helper variable after use */
             memset(concatStr, 0, strlen(concatStr));
 
-        } else if(startsWith(buffer, "+ Client version accepted - please send Game-ID to join")) {
+        } else if(startsWith(buffer, CLIENT_ACCEPTED)) {
 
-            printf("MNM Gameserver accepted client version %s\n", gameDataPointer -> clientVersion); 
+            printf("MNM Gameserver accepted client version %s.\n", gameInfo -> clientVersion); 
 
             /* genererate & send game ID response */
-            stringConcat("ID ", gameDataPointer -> gameID, concatStr);
+            stringConcat(ID, gameInfo -> gameID, concatStr);
 
             /* send game ID */
-            sendLineToServer(sockfd, buffer, concatStr);
+            sendLineToServer(concatStr);
 
             /* clear helper variable after use */
             memset(concatStr, 0, strlen(concatStr));
 
-        } else if(startsWith(buffer, "+ PLAYING")) {
+        } else if(startsWith(buffer, PLAYING)) {
 
             /* store, check & print gamekind */
-            if(sscanf(buffer, "%*s%*s%s", gameDataPointer -> gameKindName) != 1) {
+            if(sscanf(buffer, "%*s%*s%s", gameInfo -> gameKindName) != 1) {
                 errNdie("Could not store game data.");
-            } else if(!startsWith(gameDataPointer -> gameKindName, "Checkers")) {
+            } else if(!startsWith(gameInfo -> gameKindName, "Checkers")) {
                 errNdie("Gamekind must be \"Checkers\".");
             } else {
-                printf("Playing \"%s\".\n", gameDataPointer -> gameKindName);
+                printf("Playing \"%s\".\n", gameInfo -> gameKindName);
             }
 
             /* read in the game name; note that this is no separate 
             else-if case bc the response is of form "+ <<Game-Name>>"
             which is difficult to parse */
-            receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
+            receiveLineFromServer(buffer);
 
             /* store & print game name */
-            if(sscanf(buffer, "%*s %[^\n]", gameDataPointer -> gameName) != 1) {
+            if(sscanf(buffer, "%*s %[^\n]", gameInfo -> gameName) != 1) {
                 errNdie("Could not store game data.");
             } else {
-                printf("Joining game \"%s\".\n", gameDataPointer -> gameName);
+                printf("Joining game \"%s\".\n", gameInfo -> gameName);
             }
 
-            /* determine desired player number */
-            if (gameDataPointer -> requestedPlayerNumber == -1) {
+            /* determine requested player number */
+            if (gameInfo -> requestedPlayerNumber == -1) {
                 desPlayerNumberAsStr[0] = '\0';  /* "empty" string */
             } else {
-                sprintf(desPlayerNumberAsStr, "%i", gameDataPointer -> requestedPlayerNumber); 
+                sprintf(desPlayerNumberAsStr, "%i", gameInfo -> requestedPlayerNumber); 
             }
 
             /* generate response regarding requested player number */
-            stringConcat("PLAYER ", desPlayerNumberAsStr, concatStr);
+            stringConcat(PLAYER, desPlayerNumberAsStr, concatStr);
 
             /* send desired player number */
-            sendLineToServer(sockfd, buffer, concatStr);
+            sendLineToServer(concatStr);
 
             /* clear helper variable */
             memset(concatStr, 0, strlen(concatStr));
 
-        } else if(startsWith(buffer, "+ YOU")) {
+        } else if(startsWith(buffer, YOU)) {
 
             /* store & print player number and player name */
-            if(sscanf(buffer, "%*s %*s %i %[^\n]", &(gameDataPointer -> thisPlayerNumber), gameDataPointer -> thisPlayerName) != 2) {
+            if(sscanf(buffer, "%*s %*s %i %[^\n]", &(gameInfo -> thisPlayerNumber), gameInfo -> thisPlayerName) != 2) {
                 errNdie("Could not store game data.");
             } else {
-                printf("You are Player %i (%s).\n", gameDataPointer -> thisPlayerNumber, gameDataPointer -> thisPlayerName);
+                printf("You are Player %i (%s).\n", gameInfo -> thisPlayerNumber, gameInfo -> thisPlayerName);
             }
         
-        } else if(startsWith(buffer, "+ TOTAL")) {
+        } else if(startsWith(buffer, TOTAL)) {
 
             /* store & print total player count */
-            if(sscanf(buffer, "%*s %*s %i", &(gameDataPointer -> nPlayers)) != 1) {
+            if(sscanf(buffer, "%*s %*s %i", &(gameInfo -> nPlayers)) != 1) {
                 errNdie("Could not store game data.");
             } else {
-                printf("%i players are playing.\n", gameDataPointer -> nPlayers);
+                printf("%i players are playing.\n", gameInfo -> nPlayers);
             }
 
             /* create a shared memory segment for the opponents */
-            gameDataPointer -> shmidOpponents = SHMAlloc(gameDataPointer -> nPlayers*sizeof(struct player));
+            gameInfo -> shmidOpponents = SHMAlloc(gameInfo -> nPlayers*sizeof(struct player));
 
             /* attach opponent info to Connector process */
-            oppInfo = (struct player*) SHMAttach(gameDataPointer -> shmidOpponents);
+            oppInfo = (struct player*) SHMAttach(gameInfo -> shmidOpponents);
             SHMInfo.connectorAttachedOppInfo = true;
 
             /* store the opponent data */
-            for(int i = 0; i < gameDataPointer -> nPlayers-1; i++) {
+            for(int i = 0; i < gameInfo -> nPlayers-1; i++) {
 
                 /* read in the opponents player number, name and whether they
                 are ready; note that this is no separate else-if case bc the 
                 response is of form "+ <<Player-Number>> <<Player-Name>> <<Ready>>"
                 which is difficult to parse */
-                receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
+                receiveLineFromServer(buffer);
 
                 char temp[BUFFER_SIZE];
 
@@ -150,10 +147,10 @@ void performConnection(const int sockfd, struct gameInfo *gameDataPointer) {
             /* send a signal to the Thinker that the opponent info is now attachable */
             kill(gameInfo -> thinkerPID, SIGUSR2);
                 
-        } else if(startsWith(buffer, "+ ENDPLAYERS")) {
+        } else if(startsWith(buffer, ENDPLAYERS)) {
+            
+            break;
 
-            endOfPrologReached = true;
-        
         } else {
 
             /* for unexpected things */

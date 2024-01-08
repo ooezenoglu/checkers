@@ -18,6 +18,8 @@
 #include <signal.h>
 #include "exitHandlers.h"
 
+#define BUFFER_SIZE 255
+#define NACK "-"
 #define BOARDROWS 8
 #define BOARDCOLS 8
 

@@ -1,19 +1,18 @@
 #include "gameplay.h"
 
-#define BUFFER_SIZE 255
+char buffer[BUFFER_SIZE] = { 0 };
 
-void receiveBoard(const int sockfd) {
+void receiveBoard() {
 
-    char buffer[BUFFER_SIZE] = { 0 };
     char *toks[gameState -> cols];
     int i = 0;
     int len;
 
     while(1) {
 
-        receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
+        receiveLineFromServer(buffer);
 
-        if(startsWith(buffer, ENDBOARD)){ break; }
+        if(startsWith(buffer, ENDBOARD)) { break; }
 
         stringTokenizer(buffer + 4, " ", toks, &len, gameState -> cols);
 
@@ -40,11 +39,11 @@ void printBoard() {
     printf("   A B C D E F G H\n");
     printf(" +-----------------+\n");
 
-    for (int i = 0; i < gameState -> rows; i++) {
+    for(int i = 0; i < gameState -> rows; i++) {
         printf("%i| ", i + 1);
-        for (int j = 0; j < gameState -> cols; j++) {
+        for(int j = 0; j < gameState -> cols; j++) {
 
-            switch (gameState -> board[i][j]) {
+            switch(gameState -> board[i][j]) {
 
                 case 'w':
                     printf("%s ", w);
@@ -78,15 +77,120 @@ void printBoard() {
     printf("   A B C D E F G H\n");
 }
 
-void gameOverStatement(const int sockfd, struct gameInfo *gameDataPointer, char *buffer) {
-    
+void moveStatement() {
+
+    char concatStr[BUFFER_SIZE] = { 0 };
+
     while(1) {
 
-        receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
+        receiveLineFromServer(buffer);
 
         if(startsWith(buffer, BOARD)){
 
-            receiveBoard(sockfd);
+            receiveBoard();
+
+            /* request time to think */
+            sendLineToServer(THINKING);
+
+        } else if(startsWith(buffer, OKTHINK)) {
+
+            printf("Ok, make your move now!\n");
+
+            /* send a signal to the Thinker that it should think */
+            gameState -> think = true;
+            kill(gameInfo -> thinkerPID, SIGUSR1);
+
+            /* shortly wait for the update to arrive */
+            sleep(1);
+
+            /* read move from the pipe */
+            if((read(pipefd[0], gameState -> move, MOVESIZE)) != MOVESIZE) {
+                errNdie("Failed to read move from pipe.");
+            }
+
+            /* send the move to the server */
+            printf("Sending move %s...\n", gameState -> move);
+            stringConcat(PLAY, gameState -> move, concatStr);
+            sendLineToServer(concatStr);
+
+            waitMoveOK();
+            break;
+
+        } else if(startsWith(buffer, QUIT)) {
+
+            errNdie("moveStatement(): Protocol error.");
+
+        } else {
+
+            /* for unexpected things */
+            printf("Server: %s\n", buffer);
+            errNdie("Error in moveStatement().");
+        }
+    }
+}
+
+void think() {
+
+    if(!SHMInfo.thinkerAttachedGameState) { attachGameState(); }
+
+    if(gameState -> think) {
+
+        char *moveWhite = "A3:B4";
+        char *moveBlack = "B6:A5";
+        int n;
+
+        printBoard();
+
+        /* TODO calculate the next move here (hardcoded for now) */
+
+        /* write (hardcoded) move to the pipe */
+        if(gameInfo -> thisPlayerNumber == 0) {
+
+            n = write(pipefd[1], moveWhite, MOVESIZE);
+
+        } else {
+
+            n = write(pipefd[1], moveBlack, MOVESIZE);
+        }
+
+        if(n != MOVESIZE) { errNdie("Failed to write move to pipe."); }
+
+        gameState -> think = false;
+    }
+}
+
+void waitMoveOK() {
+
+    while(1){
+        receiveLineFromServer(buffer);
+
+        if(startsWith(buffer, MOVEOK)) {
+
+            printf("The move is valid. Opponents turn.\n");
+            break;
+
+        } else {
+
+            /* for unexpected things */
+            printf("Server: %s\n", buffer);
+            errNdie("Error in waitMOVEOK().");
+        }   
+    }
+}
+
+void waitStatement() {
+    sendLineToServer(OKWAIT);
+}
+
+void gameOverStatement() {
+    
+    while(1) {
+
+        receiveLineFromServer(buffer);
+
+        if(startsWith(buffer, BOARD)){
+
+            receiveBoard();
 
         } else if(startsWith(buffer, PLAYER0WON)) {
 
@@ -120,126 +224,17 @@ void gameOverStatement(const int sockfd, struct gameInfo *gameDataPointer, char 
      }
 }
 
-int moveStatement(const int sockfd, struct gameInfo *gameDataPointer, char *buffer) {
+void performGameplay() {
 
-    int n = 5;
-    char concatStr[BUFFER_SIZE] = { 0 };
-
-    /* store & print timeout */
-    if(sscanf(buffer, "%*s %*s %i", &(gameState -> timeout)) != 1) {
-        errNdie("Could not store game data.");
-    } else {
-        printf("Make your move within %i ms.\n", gameState -> timeout);
-    }
-
-    while(1) {
-
-        receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
-
-        if(startsWith(buffer, BOARD)){
-
-            receiveBoard(sockfd);
-
-            /* request time to think */
-            sendLineToServer(sockfd, buffer, THINKING);
-
-        } else if(startsWith(buffer, OKTHINK)) {
-
-            printf("Ok, make your move now!\n");
-
-            /* send a signal to the Thinker that it should think */
-            gameState -> think = true;
-            kill(gameInfo -> thinkerPID, SIGUSR1);
-
-            /* shortly wait for the update to arrive */
-            sleep(1);
-
-            /* read move from the pipe */
-            if((read(pipefd[0], gameState -> move, n)) != n) {
-                errNdie("Failed to read move from pipe.");
-            }
-
-            /* send the move to the server */
-            printf("Sending move %s...\n", gameState -> move);
-            stringConcat("PLAY ", gameState -> move, concatStr);
-            sendLineToServer(sockfd, buffer, concatStr);
-
-            waitMOVEOK();
-            break;
-
-        } else if(startsWith(buffer, QUIT)) {
-
-            errNdie("moveStatement(): Protocol error.");
-
-        } else {
-
-            /* for unexpected things */
-            printf("Server: %s\n", buffer);
-            errNdie("Error in moveStatement().");
-        }
-    }
-}
-
-void think() {
-
-    if(!SHMInfo.thinkerAttachedGameState) {
-        attachGameState();
-    }
-
-    if(gameState -> think) {
-
-        char *move = "A3:B4";
-        int n = sizeof(move);
-
-        printBoard();
-
-        /* TODO calculate the next move here (hardcoded for now) */
-
-        /* write move to the pipe */
-        if((write(pipefd[1], move, n)) != n) {
-            errNdie("Failed to write move to pipe.");
-        }
-
-        gameState -> think = false;
-    }
-}
-
-void waitMOVEOK() {
-
-    char buffer[BUFFER_SIZE] = { 0 };
-
-    while(1){
-        receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
-
-        if(startsWith(buffer, MOVEOK)) {
-
-            printf("The move is valid. Opponents turn.\n");
-            break;
-
-        } else {
-            /* for unexpected things */
-            printf("Server: %s\n", buffer);
-            errNdie("Error in waitMOVEOK().");
-        }   
-    }
-}
-
-void waitStatement(const int sockfd, char *buffer) {
-    sendLineToServer(sockfd, buffer, OKWAIT);
-}
-
-void performGameplay(const int sockfd, struct gameInfo *gameDataPointer) {
-
-    char buffer[BUFFER_SIZE] = { 0 };
     char concatStr[BUFFER_SIZE] = { 0 };
 
     printf("Gameplay phase\n");
 
     /* create a shared memory segment for the game state */
-    gameDataPointer -> shmidGameState = SHMAlloc(sizeof(struct gameState));
+    gameInfo -> shmidGameState = SHMAlloc(sizeof(struct gameState));
 
     /* attach game state to Connector process */
-    gameState = (struct gameState*) SHMAttach(gameDataPointer -> shmidGameState);
+    gameState = (struct gameState*) SHMAttach(gameInfo -> shmidGameState);
     SHMInfo.connectorAttachedGameState = true;
 
     gameState -> rows = BOARDROWS;
@@ -248,9 +243,9 @@ void performGameplay(const int sockfd, struct gameInfo *gameDataPointer) {
 
     while(1) {
 
-        receiveLineFromServer(sockfd, buffer, BUFFER_SIZE);
+        receiveLineFromServer(buffer);
 
-         if (buffer[0] == '-') {
+         if (startsWith(buffer, NACK)) {
 
             stringConcat("NACK received: ", buffer + 2, concatStr); /* + 2 to skip preceding "- " */
 
@@ -261,16 +256,23 @@ void performGameplay(const int sockfd, struct gameInfo *gameDataPointer) {
 
         } else if(startsWith(buffer, GAMEOVER)) { /* game over */
 
-            gameOverStatement(sockfd, gameDataPointer, buffer);
+            gameOverStatement();
             break;
 
         } else if(startsWith(buffer, WAIT)) { /* idle */
 
-            waitStatement(sockfd, buffer);
+            waitStatement();
 
         } else if(startsWith(buffer, MOVE)) { /* move */
 
-            moveStatement(sockfd, gameDataPointer, buffer);
+            /* store & print timeout */
+            if(sscanf(buffer, "%*s %*s %i", &(gameState -> timeout)) != 1) {
+                errNdie("Could not store game data.");
+            } else {
+                printf("Make your move within %i ms.\n", gameState -> timeout);
+            }
+
+            moveStatement();
         }
     }
 }

@@ -52,19 +52,19 @@ int main(int argc, char *argv[]) {
         memcpy(gameInfo -> clientVersion, CLIENT_VERSION, strlen(CLIENT_VERSION) + 1);
 
         /* read game ID and requested player number from the console */
-        parseCommandLineArgs(argc, argv, gameInfo);
+        parseCommandLineArgs(argc, argv);
 
         /* parse and store game configuration from file */
-        readConfigFile(gameInfo);
+        readConfigFile();
 
         /* connect to game server via TCP/IP socket */
-        sockfd = connectToServer(gameInfo -> hostName, gameInfo -> port);
+        connectToServer();
 
         /* perform prologue phase */
-        performConnection(sockfd, gameInfo);
+        performConnection();
 
         /* perform game play phase */
-        performGameplay(sockfd, gameInfo);
+        performGameplay();
 
     } else { /* Thinker process (parent) */
         atexit(cleanupThinker);
@@ -76,8 +76,6 @@ int main(int argc, char *argv[]) {
         while(waitpid(pid, &wstatus, WNOHANG) == 0) {
 
             if(!SHMInfo.thinkerAttachedOppInfo) { continue; }
-
-            /* do Thinker stuff */
         }
         
         /* debugging */
