@@ -16,9 +16,11 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <signal.h>
+#include <sys/epoll.h>
 #include "exitHandlers.h"
 
 #define BUFFER_SIZE 255
+#define MAXEVENTS 2
 #define NACK "-"
 #define BOARDROWS 8
 #define BOARDCOLS 8
@@ -71,10 +73,13 @@ struct SHMInfo {
 /* global variables */
 extern int shmidGameInfo;
 extern int sockfd;
+extern int epfd;
 extern int pipefd[2];
 extern struct gameInfo *gameInfo;
 extern struct player *oppInfo;
 extern struct gameState *gameState;
 extern struct SHMInfo SHMInfo;
+extern struct epoll_event sockEV;
+extern struct epoll_event pipeEV;
 
 #endif

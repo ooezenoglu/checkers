@@ -12,6 +12,11 @@ void cleanup() {
         printf("Closing socket...\n");
         close(sockfd);
     }
+
+    if(epfd != -1) {
+        printf("Closing epoll instance...\n");
+        close(epfd);
+    }
 }
 
 void cleanupThinker() {

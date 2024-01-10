@@ -40,7 +40,7 @@ void printBoard() {
     printf(" +-----------------+\n");
 
     for(int i = 0; i < gameState -> rows; i++) {
-        printf("%i| ", i + 1);
+        printf("%i| ", gameState -> rows - i);
         for(int j = 0; j < gameState -> cols; j++) {
 
             switch(gameState -> board[i][j]) {
@@ -69,7 +69,7 @@ void printBoard() {
             }
             f = !f;
         }
-        printf("|%i", i + 1);
+        printf("|%i", gameState -> rows - i);
         printf("\n");
         f = !f;
     }
@@ -79,7 +79,9 @@ void printBoard() {
 
 void moveStatement() {
 
+    int nfds;
     char concatStr[BUFFER_SIZE] = { 0 };
+    struct epoll_event evs[MAXEVENTS];
 
     while(1) {
 
@@ -100,18 +102,34 @@ void moveStatement() {
             gameState -> think = true;
             kill(gameInfo -> thinkerPID, SIGUSR1);
 
-            /* shortly wait for the update to arrive */
-            sleep(1);
-
-            /* read move from the pipe */
-            if((read(pipefd[0], gameState -> move, MOVESIZE)) != MOVESIZE) {
-                errNdie("Failed to read move from pipe.");
+            /* monitor file descriptors for incoming data */
+            if((nfds = epoll_wait(epfd, evs, MAXEVENTS, -1)) < 0) {
+                errNdie("Error in epoll_wait().");
             }
 
-            /* send the move to the server */
-            printf("Sending move %s...\n", gameState -> move);
-            stringConcat(PLAY, gameState -> move, concatStr);
-            sendLineToServer(concatStr);
+            /* scan ready events for data in the socket (-> timeout / protocol error) */
+            for(int i = 0; i < nfds; i++) {
+                if(evs[i].data.fd == sockfd) {
+                    receiveLineFromServer(buffer);
+                    printf("Server: %s\n", buffer);
+                    errNdie("Error in moveStatement().");
+                }
+            }
+
+            /* scan ready events for data in the pipe */
+            for(int i = 0; i < nfds; i++) {
+                if(evs[i].data.fd == pipefd[0]) {
+                    /* read move from the pipe */
+                    if((read(pipefd[0], gameState -> move, MOVESIZE)) != MOVESIZE) {
+                        errNdie("Failed to read move from pipe.");
+                    }
+                    /* send the move to the server */
+                    printf("Sending move %s...\n", gameState -> move);
+                    stringConcat(PLAY, gameState -> move, concatStr);
+                    sendLineToServer(concatStr);
+                    break;
+                }
+            }
 
             waitMoveOK();
             break;

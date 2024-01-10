@@ -9,11 +9,13 @@
 pid_t pid;
 int shmidGameInfo, wstatus;
 int sockfd = -1;
+int epfd = -1;
 int pipefd[2];
 struct gameInfo *gameInfo;
 struct player *oppInfo;
 struct gameState *gameState;
 struct SHMInfo SHMInfo = { false };
+struct epoll_event pipeEV;
 
 int main(int argc, char *argv[]) {
     atexit(cleanup);
@@ -39,6 +41,18 @@ int main(int argc, char *argv[]) {
 
         /* close write end of pipe */
         if(close(pipefd[1]) != 0) { errNdie("Failed to close write end of pipe."); }
+
+        /* create an epoll instance to monitor file descriptors */
+        if((epfd = epoll_create(MAXEVENTS)) == -1) { errNdie("Failed to create epoll instance."); }
+
+        /* monitor incoming data in the pipe */
+        pipeEV.events = EPOLLIN;
+        pipeEV.data.fd = pipefd[0];
+
+        /* add pipe file descriptor (read end) to the interest list of the epoll instance */
+        if(epoll_ctl(epfd, EPOLL_CTL_ADD, pipefd[0], &pipeEV) != 0) {
+            errNdie("Failed to add the pipe file descriptor (read end) to the interest list.");
+        }
 
         /* attach game info to Connector process */
         gameInfo = (struct gameInfo*) SHMAttach(shmidGameInfo);

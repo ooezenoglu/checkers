@@ -4,6 +4,7 @@ void connectToServer() {
 
     struct addrinfo hints, *addrInfoList;
     struct sockaddr_in servAddr;
+    struct epoll_event sockEV;
     
     /* zero out bytes of hints sruct */
     memset(&hints, 0, sizeof(hints));
@@ -32,6 +33,15 @@ void connectToServer() {
     /* connect to server */
     if(connect(sockfd, (struct sockaddr*) &servAddr, sizeof(servAddr)) != 0) {
         errNdie("Failed to establish connection with the server.\n");
+    }
+
+    /* monitor incoming data in the socket */
+    sockEV.events = EPOLLIN;
+    sockEV.data.fd = sockfd;
+
+    /* add socket file descriptor to the interest list of the epoll instance */
+    if(epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &sockEV) != 0) {
+        errNdie("Failed to add the socket file descriptor to the interest list.");
     }
 
     /* debugging */
