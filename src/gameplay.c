@@ -107,31 +107,26 @@ void moveStatement() {
                 errNdie("Error in epoll_wait().");
             }
 
-            /* scan ready events for data in the socket (-> timeout / protocol error) */
-            for(int i = 0; i < nfds; i++) {
-                if(evs[i].data.fd == sockfd) {
-                    receiveLineFromServer(buffer);
-                    printf("Server: %s\n", buffer);
-                    errNdie("Error in moveStatement().");
-                }
+            /* check whether there's incoming data from the socket (-> timeout / protocol error) */
+            if(nfds == 2 || (nfds == 1 && evs[0].data.fd == sockfd)) {
+                receiveLineFromServer(buffer);
+                printf("Server: %s\n", buffer);
+                errNdie("Error in moveStatement().");
             }
 
-            /* scan ready events for data in the pipe */
-            for(int i = 0; i < nfds; i++) {
-                if(evs[i].data.fd == pipefd[0]) {
-                    /* read move from the pipe */
-                    if((read(pipefd[0], gameState -> move, MOVESIZE)) != MOVESIZE) {
-                        errNdie("Failed to read move from pipe.");
-                    }
-                    /* send the move to the server */
-                    printf("Sending move %s...\n", gameState -> move);
-                    stringConcat(PLAY, gameState -> move, concatStr);
-                    sendLineToServer(concatStr);
-                    break;
+            /* check whether there's data in the pipe */
+            if(evs[0].data.fd == pipefd[0]) {
+                /* read move from the pipe */
+                if((read(pipefd[0], gameState -> move, MOVESIZE)) != MOVESIZE) {
+                    errNdie("Failed to read move from pipe.");
                 }
+                /* send the move to the server */
+                printf("Sending move %s...\n", gameState -> move);
+                stringConcat(PLAY, gameState -> move, concatStr);
+                sendLineToServer(concatStr);
+                waitMoveOK();
             }
 
-            waitMoveOK();
             break;
 
         } else if(startsWith(buffer, QUIT)) {
