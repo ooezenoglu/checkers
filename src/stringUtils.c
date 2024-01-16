@@ -19,7 +19,7 @@ bool stringEquals(const char *s1, const char *s2) {
     return strncmp(s1, s2, s1Length) == 0;
 }
 
-void stringConcat(const char *leftString, const char *rightString, char *dest) {
+void stringConcat(const char *leftString, const char *rightString, char *delim, char *dest) {
 
     if(leftString == NULL && rightString != NULL) {
         /* copy the right string + /0 to the destination */
@@ -42,6 +42,13 @@ void stringConcat(const char *leftString, const char *rightString, char *dest) {
     /* copy the left string to the destination */
     if(memcpy(dest, leftString, strlen(leftString)) == NULL) {
         errNdie("Failed to copy string.");
+    }
+
+    if(delim != NULL) {
+        /* concatenate the delimiter to the destination */
+        if(strncat(dest, delim, strlen(delim)) == NULL) {
+            errNdie("Failed to concatenate strings.");
+        }
     }
 
     /* concatenate the right string and its null terminator to the destination */

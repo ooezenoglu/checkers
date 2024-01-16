@@ -57,7 +57,8 @@ struct gameState {
     int rows;
     int cols;
     bool think;
-    char move[20];
+    char move[BUFFER_SIZE];
+    int moveLength;
     char board[BOARDROWS][BOARDCOLS];
 };
 

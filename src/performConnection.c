@@ -12,7 +12,7 @@ void performConnection() {
 
         if (startsWith(buffer, NACK)) {
             
-            stringConcat("NACK received: ", buffer + 2, concatStr); /* + 2 to skip preceding "- " */
+            stringConcat("NACK received: ", buffer + 2, NULL, concatStr); /* + 2 to skip preceding "- " */
 
             /* remove newline at the end of the string bc perror adds more stuff to it */
             concatStr[strlen(concatStr)-1] = '\0';
@@ -33,7 +33,7 @@ void performConnection() {
             printf("The message of the day is: %s", buffer+2);
 
             /* generate & send client version response */
-            stringConcat(VERSION, gameInfo -> clientVersion, concatStr);
+            stringConcat(VERSION, gameInfo -> clientVersion, NULL, concatStr);
 
             /* send client version (note that it must match the game server major version) */
             sendLineToServer(concatStr);
@@ -46,7 +46,7 @@ void performConnection() {
             printf("MNM Gameserver accepted client version %s.\n", gameInfo -> clientVersion); 
 
             /* genererate & send game ID response */
-            stringConcat(ID, gameInfo -> gameID, concatStr);
+            stringConcat(ID, gameInfo -> gameID, NULL, concatStr);
 
             /* send game ID */
             sendLineToServer(concatStr);
@@ -85,7 +85,7 @@ void performConnection() {
             }
 
             /* generate response regarding requested player number */
-            stringConcat(PLAYER, desPlayerNumberAsStr, concatStr);
+            stringConcat(PLAYER, desPlayerNumberAsStr, NULL, concatStr);
 
             /* send desired player number */
             sendLineToServer(concatStr);

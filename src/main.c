@@ -3,6 +3,7 @@
 #include "connection.h"
 #include "sharedMemory.h"
 #include "gameplay.h"
+#include "thinker.h"
 
 #define CLIENT_VERSION "3.1"
 

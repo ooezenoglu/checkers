@@ -6,7 +6,8 @@
 #include "connection.h"
 #include "sharedMemory.h"
 
-#define MOVESIZE 5
+#define WHITE 0
+#define BLACK 1
 #define MOVE "+ MOVE"
 #define BOARD "+ BOARD"
 #define ENDBOARD "+ ENDBOARD"
@@ -24,7 +25,6 @@
 void receiveBoard();
 void printBoard();
 void moveStatement();
-void think();
 void waitMoveOK();
 void waitStatement();
 void gameOverStatement();

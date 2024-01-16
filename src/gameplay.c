@@ -117,12 +117,12 @@ void moveStatement() {
             /* check whether there's data in the pipe */
             if(evs[0].data.fd == pipefd[0]) {
                 /* read move from the pipe */
-                if((read(pipefd[0], gameState -> move, MOVESIZE)) != MOVESIZE) {
+                if((read(pipefd[0], gameState -> move, gameState -> moveLength)) != gameState -> moveLength) {
                     errNdie("Failed to read move from pipe.");
                 }
                 /* send the move to the server */
                 printf("Sending move %s...\n", gameState -> move);
-                stringConcat(PLAY, gameState -> move, concatStr);
+                stringConcat(PLAY, gameState -> move, NULL, concatStr);
                 sendLineToServer(concatStr);
                 waitMoveOK();
             }
@@ -139,36 +139,6 @@ void moveStatement() {
             printf("Server: %s\n", buffer);
             errNdie("Error in moveStatement().");
         }
-    }
-}
-
-void think() {
-
-    if(!SHMInfo.thinkerAttachedGameState) { attachGameState(); }
-
-    if(gameState -> think) {
-
-        char *moveWhite = "A3:B4";
-        char *moveBlack = "B6:A5";
-        int n;
-
-        printBoard();
-
-        /* TODO calculate the next move here (hardcoded for now) */
-
-        /* write (hardcoded) move to the pipe */
-        if(gameInfo -> thisPlayerNumber == 0) {
-
-            n = write(pipefd[1], moveWhite, MOVESIZE);
-
-        } else {
-
-            n = write(pipefd[1], moveBlack, MOVESIZE);
-        }
-
-        if(n != MOVESIZE) { errNdie("Failed to write move to pipe."); }
-
-        gameState -> think = false;
     }
 }
 
@@ -260,7 +230,7 @@ void performGameplay() {
 
          if (startsWith(buffer, NACK)) {
 
-            stringConcat("NACK received: ", buffer + 2, concatStr); /* + 2 to skip preceding "- " */
+            stringConcat("NACK received: ", buffer + 2, NULL, concatStr); /* + 2 to skip preceding "- " */
 
             /* remove newline at the end of the string bc perror adds more stuff to it */
             concatStr[strlen(concatStr)-1] = '\0';
