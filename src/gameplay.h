@@ -6,8 +6,6 @@
 #include "connection.h"
 #include "sharedMemory.h"
 
-#define WHITE 0
-#define BLACK 1
 #define MOVE "+ MOVE"
 #define BOARD "+ BOARD"
 #define ENDBOARD "+ ENDBOARD"

@@ -25,6 +25,7 @@ char *computeMove() {
     char candidate;
     char from[3] = { 0 }; /* 2 chars + Null Byte */
     char to[3] = { 0 }; /* 2 chars + Null Byte */
+    char randomMove[3+2+3] = { 0 };
     /* initially allocate memory for a string of form "<from>:<to>" + Null Byte */
     char *move = (char *) calloc(2+1+2+1, sizeof(char));
     bool isKingPiece;
@@ -43,7 +44,7 @@ char *computeMove() {
             isKingPiece = isKing(candidate);
 
             /* debugging */
-            printf("Candidate at: %s; Candidate is king: %i\n", from, isKingPiece);
+            // printf("Candidate at: %s; Candidate is king: %i\n", from, isKingPiece);
 
             if(canBeat(from, isKingPiece, to)) {
 
@@ -81,12 +82,12 @@ char *computeMove() {
                     return move;
                 }
             }
-            
             continue;
         }
     }
 
-    memcpy(move, "E3:F4", strlen("E3:F4"));
+    getValidRandomMove(randomMove);
+    memcpy(move, randomMove, strlen(randomMove));
     gameState -> moveLength += strlen(move) + 1;
 
     return move;
@@ -94,41 +95,244 @@ char *computeMove() {
 
 bool isClientPiece(char piece) {
 
-    if(gameInfo -> thisPlayerNumber == WHITE) {
-        return (piece == 'w' || piece == 'W');
-
-    } else if (gameInfo -> thisPlayerNumber == BLACK) {
-        return (piece == 'b' || piece == 'B');
+    if(gameInfo -> thisPlayerNumber == 0) {
+        return (piece == 'w') || (piece == 'W');
+        
+    } else if(gameInfo -> thisPlayerNumber == 1){
+        return (piece == 'b') || (piece == 'B');
 
     } else {
-        errNdie("Unknown player number of client.");
+        errNdie("piece could not be found");
+        return false;
     }
 }
 
-void getIndexAt(int row, int col, char idx[2]) {
-    idx[0] = 65 + col;
-    idx[1] = gameState -> rows - row + '0';
+bool isOpponentPiece(char piece) {
+    return !isClientPiece(piece) && piece != '*';
+}
+
+bool isPlayerWhite() {
+    return gameInfo -> thisPlayerNumber == 0;
+}
+
+bool isPlayerBlack() {
+    return gameInfo -> thisPlayerNumber == 1;
 }
 
 bool isKing(char piece) {
-    return false;
+    return (piece == 'B') || (piece == 'W');
 }
 
-bool canBeat(char from[2], bool isKing, char to[2]) {
-    to[0] = 'B',
-    to[1] = '4';
+bool becomesKing(char to[3]) {
+    
+    if(gameInfo -> thisPlayerNumber == 0) {
+        return (to[1] == '8');
+        
+    } else if (gameInfo -> thisPlayerNumber == 1) {
+        return (to[1] == '1');
+
+    } else {
+        errNdie("Unknown player number.");
+        return false;
+    }
+}
+
+void getIndexAt(int row, int col, char idx[3]) {
+    idx[0] = 'A' + col;
+    idx[1] = gameState -> rows - row + '0';
+    idx[2] = '\0'; 
+}
+
+void getBoardIJ(int* row, int* col, char src[3]) {
+    *col = src[0] - 'A';
+    *row = gameState -> rows - (src[1] - '0');
+}
+
+bool canJumpLeftForward(char from[3]) {
+
+    switch (gameInfo -> thisPlayerNumber) {
+        case 0:
+            return !(from[0] == 'A' || from[0] == 'B'|| from[1] == '7' || from[1] == '8');
+            break;
+        case 1:
+            return !(from[0] == 'G' || from[0] == 'H' || from[1] == '1' || from[1] == '2');
+            break;
+        default:
+            errNdie("Wrong Player Number!");
+    }
+
     return true;
 }
 
-bool becomesKing(char to[2]) {
+bool canMoveLeftForward(char from[3]) {
+
+    switch (gameInfo -> thisPlayerNumber) {
+        case 0:
+            return !(from[0] == 'A' || from[1] == '8');
+            break;
+        case 1:
+            return !(from[0] == 'H' || from[1] == '1');
+            break;
+        default:
+            errNdie("Wrong Player Number!");
+    }
+    
+    return true;
+}
+
+bool canJumpRightForward(char from[3]) {
+
+    switch (gameInfo -> thisPlayerNumber) {
+        case 0:
+            return !(from[0] == 'G' || from[0] == 'H' || from[1] == '7' || from[1] == '8');
+            break;
+        case 1:
+            return !(from[0] == 'A' || from[0] == 'B' || from[1] == '1' || from[1] == '2');
+            break;
+        default:
+            errNdie("Wrong Player Number!");
+    }
+        
+    return true;
+}
+
+bool canMoveRightForward(char from[3]) {
+
+    switch (gameInfo -> thisPlayerNumber) {
+        case 0:
+            return !(from[0] == 'H' || from[1] == 8);
+            break;
+        case 1:
+            return !(from[0] == 'A' || from[1] == '1');
+            break;
+        default:
+            errNdie("Wrong Player Number!");
+    }
+    
+    return true;
+}
+
+void getLeftDiagonalCell(char from[3], char dest[3]) {
+
+   /* TODO switch playerNumber */
+
+    if(!canMoveLeftForward(from)) {
+        errNdie("Cannot get left diagonal cell."); 
+    }
+
+    dest[0] = from[0] - 1;
+    dest[1] = from[1] + 1;
+    dest[2] = '\0';
+
+    /* debugging */
+    // printf("Left diagonal cell of %s is %s.\n", from, dest);
+}
+
+void getRightDiagonalCell(char from[3], char dest[3]){
+
+    /* TODO switch playerNumber */
+
+    if(!canMoveRightForward(from)) {
+        errNdie("Cannot get right diagonal cell."); 
+    }
+
+    dest[0] = from[0] + 1;
+    dest[1] = from[1] + 1;
+    dest[2] = '\0';
+
+    /* debugging */
+    // printf("Right diagonal cell of %s is %s.\n", from, dest);
+}
+
+bool isCellFree(char source[3]) {
+    
+    int i, j;
+
+    getBoardIJ(&i, &j, source);
+    
+    return gameState -> board[i][j] == '*';
+}
+
+bool canBeat(char from[3], bool isKing, char to[3]) {
+
+    char dest[3] = {0};
+    int i, j;
+
+    if(!isKing) {
+        if(canJumpLeftForward(from)) {
+            getLeftDiagonalCell(from, dest);
+            getBoardIJ(&i, &j, dest);
+            // printf("Left diagonal cell is %s, with row index %i and col index %i\n", dest, i, j);
+            if(isOpponentPiece(gameState -> board[i][j])) {
+                // printf("Opponent piece at %s\n", dest);
+                getLeftDiagonalCell(dest, to);
+                if(isCellFree(to)){
+                    return true;
+                }
+                return false; // just for now, if done with other stuff change this to true;
+            }
+        } 
+
+        if(canJumpRightForward(from)) {
+            getRightDiagonalCell(from, dest);
+            getBoardIJ(&i, &j, dest);
+            // printf("Right diagonal cell is %s, with row index %i and col index %i\n", dest, i, j);
+            if(isOpponentPiece(gameState -> board[i][j])) {
+                // printf("Opponent piece at %s\n", dest);
+                getRightDiagonalCell(dest, to);
+                if(isCellFree(to)){
+                    return true;
+                }
+                return false; // just for now, if done with other stuff change this to true;
+            }
+        } 
+    }
+
+    /* TODO code for isKing == true */
     return false;
 }
 
-char *getValidRandomMove() {
+bool getValidRandomMove(char move[8]) {
 
-    char *move = (char *) calloc(2+1+2+1, sizeof(char));
+    /* TODO randomly go to left or rght */
 
-    stringConcat("E3", "F4", ":", move);
+    char candidate;
+    char from[3] = { 0 }; /* 2 chars + Null Byte */
+    char to[3] = { 0 }; /* 2 chars + Null Byte */
+    bool isKingPiece;
 
-    return move;
+        for(int i = 0; i < gameState -> rows; i++) {
+            for(int j = 0; j < gameState -> cols; j++) {
+
+                if(!isClientPiece(gameState -> board[i][j])) { continue; }
+
+                candidate = gameState -> board[i][j];
+                getIndexAt(i, j, from);
+                isKingPiece = isKing(candidate);
+
+                if(!isKingPiece) {
+
+                    if(canMoveLeftForward(from)){
+                        getLeftDiagonalCell(from, to);
+                        isCellFree(to);
+                        /* store the move */
+                        stringConcat(from, to, ":", move);
+                        return true;
+                    }
+
+                    if(canMoveRightForward(from)){
+                        getRightDiagonalCell(from, to);
+                        isCellFree(to);
+                        /* store the move */
+                        stringConcat(from, to, ":", move);
+                        return true;
+                    }
+                    return false;
+                }
+            
+                //TODO noch für isKing prüfen
+            }
+        }
+    
+    return false;
 }
