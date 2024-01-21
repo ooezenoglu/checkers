@@ -39,7 +39,6 @@ struct gameInfo {
     char gameName[40];
     int thisPlayerNumber;
     char thisPlayerName[20];
-    char clientHasWon[10];
     int nPlayers;
     int shmidOpponents;
     int shmidGameState;
@@ -49,7 +48,6 @@ struct player {
     int playerNumber;
     char playerName[20];
     int isReady;
-    char hasWon[10];
 };
 
 struct gameState {

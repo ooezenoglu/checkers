@@ -166,45 +166,53 @@ void waitStatement() {
 }
 
 void gameOverStatement() {
-    
+
+    char *response;
+
     while(1) {
 
         receiveLineFromServer(buffer);
 
-        if(startsWith(buffer, BOARD)){
-
+        if(startsWith(buffer, BOARD)) {
             receiveBoard();
 
         } else if(startsWith(buffer, PLAYER0WON)) {
+            
+            /* Player 0 won */
+            response = strstr(buffer, "Yes") ? "Yes" : "No";
+           
+            if(startsWith(response, "Yes")) {
+                printf("Player 0 won the game!\n");
 
-            /* store whether client has won */
-            if(sscanf(buffer, "%*s %*s %s", gameInfo -> clientHasWon) != 1) {
-                errNdie("Could not store game data.");
+            } else if(startsWith(response, "No")) {
+                printf("Player 0 lost the game!\n");
+                
+            } else {
+                printf("Unexpected response: %s\n", response);
             }
-
-            printf("Client has won: %s\n.", gameInfo -> clientHasWon);
 
         } else if(startsWith(buffer, PLAYER1WON)) {
+            
+            /* Player 1 won */
+            response = strstr(buffer, "Yes") ? "Yes" : "No";
+            
+            if(startsWith(response, "Yes")) {
+                printf("Player 1 won the game!\n");
 
-            /* store whether opponent has won */
-            if(sscanf(buffer, "%*s %*s %s", oppInfo -> hasWon) != 1) {
-                errNdie("Could not store game data.");
+            } else if(startsWith(response, "No")) {
+                printf("Player 1 lost the game!\n");
+
+            } else {
+                printf("Unexpected response: %s\n", response);
             }
 
-            printf("Opponent has won: %s\n.", oppInfo -> hasWon);
-        
         } else if(startsWith(buffer, QUIT)) {
-
-            printf("Quitting game...");
             break;
 
         } else {
-
-            /* for unexpected things */
-            printf("Server: %s\n", buffer);
             errNdie("Error in gameOverStatement().");
         }
-     }
+    }
 }
 
 void performGameplay() {
