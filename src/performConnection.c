@@ -81,7 +81,7 @@ void performConnection() {
             if (gameInfo -> requestedPlayerNumber == -1) {
                 desPlayerNumberAsStr[0] = '\0';  /* "empty" string */
             } else {
-                sprintf(desPlayerNumberAsStr, "%i", gameInfo -> requestedPlayerNumber); 
+                sprintf(desPlayerNumberAsStr, " %i", gameInfo -> requestedPlayerNumber - 1); 
             }
 
             /* generate response regarding requested player number */
