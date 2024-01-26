@@ -1,4 +1,4 @@
-#include "exitHandlers.h"
+#include "../include/exitHandlers.h"
 
 void errNdie(char *msg) {
 

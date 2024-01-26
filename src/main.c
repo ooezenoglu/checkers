@@ -1,9 +1,9 @@
-#include "helpers.h"
-#include "userInput.h"
-#include "connection.h"
-#include "sharedMemory.h"
-#include "gameplay.h"
-#include "thinker.h"
+#include "../include/helpers.h"
+#include "../include/userInput.h"
+#include "../include/connection.h"
+#include "../include/sharedMemory.h"
+#include "../include/gameplay.h"
+#include "../include/thinker.h"
 
 #define CLIENT_VERSION "3.1"
 

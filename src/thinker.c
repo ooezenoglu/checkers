@@ -1,4 +1,4 @@
-#include "thinker.h"
+#include "../include/thinker.h"
 
 void think() {
 

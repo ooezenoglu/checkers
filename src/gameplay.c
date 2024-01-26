@@ -1,4 +1,4 @@
-#include "gameplay.h"
+#include "../include/gameplay.h"
 
 char buffer[BUFFER_SIZE] = { 0 };
 
@@ -49,7 +49,7 @@ void printBoard() {
                     printf("%s ", w);
                     break;   
                 case 'W':
-                    printf("%s ", w);
+                    printf("%s ", W);
                     break;
                 case 'b':
                     printf("%s ", b);

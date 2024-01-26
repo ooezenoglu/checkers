@@ -1,4 +1,4 @@
-#include "sharedMemory.h"
+#include "../include/sharedMemory.h"
 
 int SHMAlloc(size_t size) {
 
