@@ -298,9 +298,6 @@ bool getLeftCellUp(char from[3], char dest[3]) {
             break;
     }
 
-    /* debugging */
-    // printf("Left diagonal cell of %s is %s.\n", from, dest);
-
     return true;
 }
 
@@ -325,9 +322,6 @@ bool getLeftCellDown(char from[3], char dest[3]) {
             errNdie("Player number unknown.");
             break;
     }
-
-    /* debugging */
-    // printf("Left diagonal cell of %s is %s.\n", from, dest);
 
     return true;
 }
@@ -354,9 +348,6 @@ bool getRightCellUp(char from[3], char dest[3]){
             break;
     }
 
-    /* debugging */
-    // printf("Right diagonal cell of %s is %s.\n", from, dest);
-
     return true;
 }
 
@@ -382,9 +373,6 @@ bool getRightCellDown(char from[3], char dest[3]){
             break;
     }
 
-    /* debugging */
-    // printf("Right diagonal cell of %s is %s.\n", from, dest);
-
     return true;
 }
 
@@ -403,15 +391,11 @@ bool pursueLeftUp(char from[3], char to[3]) {
     int i, j;
 
     if(canJumpLeftUp(from)) {
-        printf("Pursuing left up...\n");
         getLeftCellUp(from, dest);
         getBoardIJ(&i, &j, dest);
-        // printf("Left diagonal cell is %s, with row index %i and col index %i\n", dest, i, j);
         if(isOpponentPiece(gameState -> board[i][j])) {
-            // printf("Opponent piece at %s\n", dest);
             getLeftCellUp(dest, to);
             if(isCellFree(to)){
-                printf("Move found; Go to %s!\n", to);
                 gameState -> board[i][j] = '*';
                 return true;
             }
@@ -420,7 +404,6 @@ bool pursueLeftUp(char from[3], char to[3]) {
         }
    }
 
-    printf("Can't pursue left up!\n");
     return false;
 }
 
@@ -430,15 +413,11 @@ bool pursueRightUp(char from[3], char to[3]) {
     int i, j;
 
     if(canJumpRightUp(from)) {
-        printf("Pursuing right up...\n");
         getRightCellUp(from, dest);
         getBoardIJ(&i, &j, dest);
-        // printf("Left diagonal cell is %s, with row index %i and col index %i\n", dest, i, j);
         if(isOpponentPiece(gameState -> board[i][j])) {
-            // printf("Opponent piece at %s\n", dest);
             getRightCellUp(dest, to);
             if(isCellFree(to)){
-                printf("Move found; Go to %s!\n", to);
                 gameState -> board[i][j] = '*';
                 return true;
             }
@@ -447,7 +426,6 @@ bool pursueRightUp(char from[3], char to[3]) {
         }
    }
 
-    printf("Can't pursue right up!\n");
     return false;
 }
 
@@ -457,15 +435,11 @@ bool pursueLeftDown(char from[3], char to[3]) {
     int i, j;
 
     if(canJumpLeftDown(from)) {
-        printf("Pursuing left down...\n");
         getLeftCellDown(from, dest);
         getBoardIJ(&i, &j, dest);
-        // printf("Left diagonal cell is %s, with row index %i and col index %i\n", dest, i, j);
         if(isOpponentPiece(gameState -> board[i][j])) {
-            // printf("Opponent piece at %s\n", dest);
             getLeftCellDown(dest, to);
             if(isCellFree(to)){
-                printf("Move found; Go to %s!\n", to);
                 gameState -> board[i][j] = '*';
                 return true;
             }
@@ -474,7 +448,6 @@ bool pursueLeftDown(char from[3], char to[3]) {
         }
    }
 
-    printf("Can't pursue left down!\n");
     return false;
 }
 
@@ -484,15 +457,11 @@ bool pursueRightDown(char from[3], char to[3]) {
     int i, j;
 
     if(canJumpRightDown(from)) {
-        printf("Pursuing right down...\n");
         getRightCellDown(from, dest);
         getBoardIJ(&i, &j, dest);
-        // printf("Left diagonal cell is %s, with row index %i and col index %i\n", dest, i, j);
         if(isOpponentPiece(gameState -> board[i][j])) {
-            // printf("Opponent piece at %s\n", dest);
             getRightCellDown(dest, to);
             if(isCellFree(to)){
-                printf("Move found; Go to %s!\n", to);
                 gameState -> board[i][j] = '*';
                 return true;
             }
@@ -501,7 +470,6 @@ bool pursueRightDown(char from[3], char to[3]) {
         }
    }
 
-    printf("Can't pursue right down!\n");
     return false;
 }
 
@@ -514,9 +482,7 @@ bool canBeat(char from[3], bool isKing, char to[3]) {
         if(canJumpLeftUp(from)) {
             getLeftCellUp(from, dest);
             getBoardIJ(&i, &j, dest);
-            // printf("Left diagonal cell is %s, with row index %i and col index %i\n", dest, i, j);
             if(isOpponentPiece(gameState -> board[i][j])) {
-                // printf("Opponent piece at %s\n", dest);
                 getLeftCellUp(dest, to);
                 if(isCellFree(to)) {
                     return true;
@@ -527,9 +493,7 @@ bool canBeat(char from[3], bool isKing, char to[3]) {
         if(canJumpRightUp(from)) {
             getRightCellUp(from, dest);
             getBoardIJ(&i, &j, dest);
-            // printf("Right diagonal cell is %s, with row index %i and col index %i\n", dest, i, j);
             if(isOpponentPiece(gameState -> board[i][j])) {
-                // printf("Opponent piece at %s\n", dest);
                 getRightCellUp(dest, to);
                 if(isCellFree(to)) {
                     return true;
@@ -585,7 +549,6 @@ bool getValidRandomMove(char move[8]) {
                     if(isCellFree(to)) {
                         /* store the move */
                         stringConcat(from, to, ":", move);
-                        printf("Sending random move left down\n");
                         return true;
                     }
                 }

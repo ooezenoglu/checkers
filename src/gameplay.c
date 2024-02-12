@@ -178,32 +178,32 @@ void gameOverStatement() {
 
         } else if(startsWith(buffer, PLAYER0WON)) {
             
-            /* Player 0 won */
-            response = strstr(buffer, "Yes") ? "Yes" : "No";
-           
-            if(startsWith(response, "Yes")) {
-                printf("Player 0 won the game!\n");
-
-            } else if(startsWith(response, "No")) {
-                printf("Player 0 lost the game!\n");
-                
-            } else {
-                printf("Unexpected response: %s\n", response);
-            }
-
-        } else if(startsWith(buffer, PLAYER1WON)) {
-            
             /* Player 1 won */
             response = strstr(buffer, "Yes") ? "Yes" : "No";
-            
+           
             if(startsWith(response, "Yes")) {
                 printf("Player 1 won the game!\n");
 
             } else if(startsWith(response, "No")) {
                 printf("Player 1 lost the game!\n");
+                
+            } else {
+                errNdie("Error in gameOverStatement().");
+            }
+
+        } else if(startsWith(buffer, PLAYER1WON)) {
+            
+            /* Player 2 won */
+            response = strstr(buffer, "Yes") ? "Yes" : "No";
+            
+            if(startsWith(response, "Yes")) {
+                printf("Player 2 won the game!\n");
+
+            } else if(startsWith(response, "No")) {
+                printf("Player 2 lost the game!\n");
 
             } else {
-                printf("Unexpected response: %s\n", response);
+                errNdie("Error in gameOverStatement().");
             }
 
         } else if(startsWith(buffer, QUIT)) {

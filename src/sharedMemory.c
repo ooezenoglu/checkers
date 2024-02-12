@@ -25,7 +25,7 @@ void *SHMAttach(int shmid) {
 void attachOppInfo() {
 
     /* attach opponent info to Thinker process */
-    printf("Thinker: Attaching Opponent Info SHM segment...\n");
+    // printf("Thinker: Attaching Opponent Info SHM segment...\n");
     oppInfo = (struct player*) SHMAttach(gameInfo -> shmidOpponents);
     SHMInfo.thinkerAttachedOppInfo = true;
 }
@@ -33,7 +33,7 @@ void attachOppInfo() {
 void attachGameState() {
 
     /* attach game state to Thinker process */
-    printf("Thinker: Attaching Game State SHM segment...\n");
+    // printf("Thinker: Attaching Game State SHM segment...\n");
     gameState = (struct gameState*) SHMAttach(gameInfo -> shmidGameState);
     SHMInfo.thinkerAttachedGameState = true;
 }

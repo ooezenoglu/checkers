@@ -9,12 +9,12 @@ void errNdie(char *msg) {
 void cleanup() {
 
     if(sockfd != -1) {
-        printf("Closing socket...\n");
+        // printf("Closing socket...\n");
         close(sockfd);
     }
 
     if(epfd != -1) {
-        printf("Closing epoll instance...\n");
+        // printf("Closing epoll instance...\n");
         close(epfd);
     }
 }
@@ -24,17 +24,17 @@ void cleanupThinker() {
     close(pipefd[1]);
 
     if(SHMInfo.thinkerAttachedOppInfo) {
-        printf("Thinker: Detaching Opponent Info SHM segment...\n");
+        // printf("Thinker: Detaching Opponent Info SHM segment...\n");
         SHMDetach(oppInfo);
     }
 
     if(SHMInfo.thinkerAttachedGameState) {
-        printf("Thinker: Detaching Game State SHM segment...\n");
+        // printf("Thinker: Detaching Game State SHM segment...\n");
         SHMDetach(gameState);
     }
 
     if(SHMInfo.thinkerAttachedGameInfo) {
-        printf("Thinker: Detaching Game Info SHM segment...\n");
+        // printf("Thinker: Detaching Game Info SHM segment...\n");
         SHMDetach(gameInfo);
         SHMDestroy(shmidGameInfo);
     }
@@ -45,19 +45,19 @@ void cleanupConnector() {
     close(pipefd[0]);
 
     if(SHMInfo.connectorAttachedOppInfo) {
-        printf("Connector: Detaching Opponent Info SHM segment...\n");
+        // printf("Connector: Detaching Opponent Info SHM segment...\n");
         SHMDetach(oppInfo);
         SHMDestroy(gameInfo -> shmidOpponents);
     }
 
     if(SHMInfo.connectorAttachedGameState) {
-        printf("Connector: Detaching Game State SHM segment...\n");
+        // printf("Connector: Detaching Game State SHM segment...\n");
         SHMDetach(gameState);
         SHMDestroy(gameInfo -> shmidGameState);
     }
 
     if(SHMInfo.connectorAttachedGameInfo) {
-        printf("Connector: Detaching Game Info SHM segment...\n");
+        // printf("Connector: Detaching Game Info SHM segment...\n");
         SHMDetach(gameInfo);
     }
 }

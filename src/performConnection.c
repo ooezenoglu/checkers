@@ -4,7 +4,7 @@ void performConnection() {
 
     char buffer[BUFFER_SIZE] = { 0 };
     char concatStr[BUFFER_SIZE] = { 0 };
-    char desPlayerNumberAsStr[12];
+    char reqPlayerNumberAsStr[12];
 
     while(1) {
 
@@ -79,13 +79,13 @@ void performConnection() {
 
             /* determine requested player number */
             if (gameInfo -> requestedPlayerNumber == -1) {
-                desPlayerNumberAsStr[0] = '\0';  /* "empty" string */
+                reqPlayerNumberAsStr[0] = '\0';  /* "empty" string */
             } else {
-                sprintf(desPlayerNumberAsStr, " %i", gameInfo -> requestedPlayerNumber - 1); 
+                sprintf(reqPlayerNumberAsStr, " %i", gameInfo -> requestedPlayerNumber - 1); 
             }
 
             /* generate response regarding requested player number */
-            stringConcat(PLAYER, desPlayerNumberAsStr, NULL, concatStr);
+            stringConcat(PLAYER, reqPlayerNumberAsStr, NULL, concatStr);
 
             /* send desired player number */
             sendLineToServer(concatStr);

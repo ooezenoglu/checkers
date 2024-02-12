@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
         }
         
         /* debugging */
-        printWaitDetails(wstatus);
+        // printWaitDetails(wstatus);
 
         /* finish execution since Connector terminated */
         exit(EXIT_SUCCESS);
